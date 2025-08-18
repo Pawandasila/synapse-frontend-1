@@ -1,18 +1,42 @@
-// src/app/layout.tsx
-import './globals.css';  // your global styles, if any
-import Navbar from './Navbar';
+import type { Metadata } from "next";
+import { Inter } from "next/font/google";
+import "./globals.css";
+import { ThemeProvider } from "next-themes";
+import { AuthProvider } from "@/contexts/AuthContext";
+import { EventProvider } from "@/contexts/EventContext";
+import { Toaster } from "@/components/ui/sonner";
 
-export const metadata = {
-  title: 'Your App Title',
-  description: 'Your app description',
+const inter = Inter({
+  variable: "--font-inter",
+  subsets: ["latin"],
+});
+
+export const metadata: Metadata = {
+  title: "Synapse - Hackathon & Event Platform",
+  description: "The modern platform for hackathons, competitions, and tech events. Faster, cleaner, and more engaging than ever.",
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default function RootLayout({
+  children,
+}: Readonly<{
+  children: React.ReactNode;
+}>) {
   return (
-    <html lang="en">
-      <body>
-        <Navbar />
-        <main>{children}</main>
+    <html lang="en" suppressHydrationWarning>
+      <body className={`${inter.variable} font-sans antialiased`}>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="light"
+          enableSystem
+          disableTransitionOnChange={false}
+        >
+          <AuthProvider>
+            <EventProvider>
+              {children}
+              <Toaster />
+            </EventProvider>
+          </AuthProvider>
+        </ThemeProvider>
       </body>
     </html>
   );
