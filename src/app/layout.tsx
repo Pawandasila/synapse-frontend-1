@@ -5,6 +5,7 @@ import { ThemeProvider } from "next-themes";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { EventProvider } from "@/contexts/EventContext";
 import { Toaster } from "@/components/ui/sonner";
+import ConditionalLayout from "@/components/ConditionalLayout";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -13,7 +14,8 @@ const inter = Inter({
 
 export const metadata: Metadata = {
   title: "Synapse - Hackathon & Event Platform",
-  description: "The modern platform for hackathons, competitions, and tech events. Faster, cleaner, and more engaging than ever.",
+  description:
+    "The modern platform for hackathons, competitions, and tech events. Faster, cleaner, and more engaging than ever.",
 };
 
 export default function RootLayout({
@@ -26,13 +28,15 @@ export default function RootLayout({
       <body className={`${inter.variable} font-sans antialiased`}>
         <ThemeProvider
           attribute="class"
-          defaultTheme="light"
+          defaultTheme="dark"
           enableSystem
           disableTransitionOnChange={false}
         >
           <AuthProvider>
             <EventProvider>
-              {children}
+              <ConditionalLayout>
+                {children}
+              </ConditionalLayout>
               <Toaster />
             </EventProvider>
           </AuthProvider>
