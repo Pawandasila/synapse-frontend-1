@@ -37,7 +37,7 @@ export default function RootLayout({
               <ConditionalLayout>
                 {children}
               </ConditionalLayout>
-              <Toaster />
+              <Toaster richColors />
             </EventProvider>
           </AuthProvider>
         </ThemeProvider>

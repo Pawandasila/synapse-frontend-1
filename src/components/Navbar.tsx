@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTheme } from "next-themes";
@@ -37,11 +37,13 @@ import {
   BookOpen,
 } from "lucide-react";
 import ThemeToggleButton from "./ui/theme-toggle-button";
+import { usePathname } from "next/navigation";
+import { useRouter } from "next/navigation";
 
 const Navbar = () => {
   const { user, isAuthenticated, logout } = useAuth();
-  const { theme, setTheme } = useTheme();
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const router = useRouter();
 
   const navItems = [
     { href: "/competitions", label: "Competitions", icon: Trophy },

@@ -42,14 +42,13 @@ const SignUpPage = () => {
     }
 
     setIsLoading(true);
-    clearError(); // Clear any previous errors
+    clearError();
 
     try {
-      await signup(formData.email, formData.password, formData.name, formData.role);
-      toast.success('Account created successfully!');
-      router.push('/dashboard');
+      await signup(formData.email, formData.password, formData.name, formData.role, 'email');
+      toast.success('Account created successfully! Please log in to continue.');
+      router.push('/auth/login');
     } catch (error) {
-      // Error is now handled by the context and displayed via the error state
       const errorMessage = error instanceof Error ? error.message : 'Failed to create account. Please try again.';
       toast.error(errorMessage);
     } finally {

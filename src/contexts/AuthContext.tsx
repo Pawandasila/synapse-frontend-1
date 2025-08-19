@@ -1,13 +1,75 @@
-'use client';
+"use client";
 
-import { createContext, useContext, useReducer, ReactNode, useEffect } from 'react';
-import { authAPI } from '@/lib/api';
+import {
+  createContext,
+  useContext,
+  useReducer,
+  ReactNode,
+  useEffect,
+} from "react";
+import Cookies from "js-cookie";
+import { authAPI } from "@/lib/api";
+
+const COOKIE_OPTIONS = {
+  expires: 7,
+  path: "/",
+  secure: false,
+  sameSite: "lax" as const,
+};
+
+const setAuthData = (user: User, token: string) => {
+  if (typeof window !== "undefined") {
+    localStorage.setItem("authToken", token);
+    localStorage.setItem("user", JSON.stringify(user));
+    localStorage.setItem("userRole", user.role);
+    localStorage.setItem("userId", user.id);
+  }
+
+  Cookies.set("authToken", token, COOKIE_OPTIONS);
+  Cookies.set("user", JSON.stringify(user), COOKIE_OPTIONS);
+  Cookies.set("userRole", user.role, COOKIE_OPTIONS);
+  Cookies.set("userId", user.id, COOKIE_OPTIONS);
+};
+
+const getAuthData = () => {
+  if (typeof window === "undefined") return { token: null, user: null };
+
+  const token = localStorage.getItem("authToken");
+  const userStr = localStorage.getItem("user");
+
+  let user = null;
+  if (userStr) {
+    try {
+      user = JSON.parse(userStr);
+    } catch (error) {
+      console.error("Error parsing user data:", error);
+      clearAuthData();
+      return { token: null, user: null };
+    }
+  }
+
+  return { token, user };
+};
+
+const clearAuthData = () => {
+  if (typeof window !== "undefined") {
+    localStorage.removeItem("authToken");
+    localStorage.removeItem("user");
+    localStorage.removeItem("userRole");
+    localStorage.removeItem("userId");
+  }
+
+  Cookies.remove("authToken", { path: "/" });
+  Cookies.remove("user", { path: "/" });
+  Cookies.remove("userRole", { path: "/" });
+  Cookies.remove("userId", { path: "/" });
+};
 
 export interface User {
   id: string;
   email: string;
   name: string;
-  role: 'participant' | 'organizer' | 'judge';
+  role: "participant" | "organizer" | "judge";
   avatar?: string;
   bio?: string;
   skills?: string[];
@@ -22,25 +84,26 @@ interface AuthState {
 }
 
 type AuthAction =
-  | { type: 'LOGIN_START' }
-  | { type: 'LOGIN_SUCCESS'; payload: User }
-  | { type: 'LOGIN_FAILURE'; payload: string }
-  | { type: 'LOGOUT' }
-  | { type: 'UPDATE_PROFILE'; payload: Partial<User> }
-  | { type: 'CLEAR_ERROR' };
+  | { type: "LOGIN_START" }
+  | { type: "LOGIN_SUCCESS"; payload: User }
+  | { type: "LOGIN_FAILURE"; payload: string }
+  | { type: "LOGOUT" }
+  | { type: "UPDATE_PROFILE"; payload: Partial<User> }
+  | { type: "CLEAR_ERROR" }
+  | { type: "INIT_COMPLETE" };
 
 const initialState: AuthState = {
   user: null,
   isAuthenticated: false,
-  loading: false,
+  loading: true,
   error: null,
 };
 
 const authReducer = (state: AuthState, action: AuthAction): AuthState => {
   switch (action.type) {
-    case 'LOGIN_START':
+    case "LOGIN_START":
       return { ...state, loading: true, error: null };
-    case 'LOGIN_SUCCESS':
+    case "LOGIN_SUCCESS":
       return {
         ...state,
         user: action.payload,
@@ -48,17 +111,25 @@ const authReducer = (state: AuthState, action: AuthAction): AuthState => {
         loading: false,
         error: null,
       };
-    case 'LOGIN_FAILURE':
+    case "LOGIN_FAILURE":
       return { ...state, loading: false, error: action.payload };
-    case 'LOGOUT':
-      return { ...state, user: null, isAuthenticated: false, error: null };
-    case 'UPDATE_PROFILE':
+    case "LOGOUT":
+      return {
+        ...state,
+        user: null,
+        isAuthenticated: false,
+        error: null,
+        loading: false,
+      };
+    case "UPDATE_PROFILE":
       return {
         ...state,
         user: state.user ? { ...state.user, ...action.payload } : null,
       };
-    case 'CLEAR_ERROR':
+    case "CLEAR_ERROR":
       return { ...state, error: null };
+    case "INIT_COMPLETE":
+      return { ...state, loading: false };
     default:
       return state;
   }
@@ -66,7 +137,13 @@ const authReducer = (state: AuthState, action: AuthAction): AuthState => {
 
 interface AuthContextType extends AuthState {
   login: (email: string, password: string) => Promise<void>;
-  signup: (email: string, password: string, name: string, role: User['role']) => Promise<void>;
+  signup: (
+    email: string,
+    password: string,
+    name: string,
+    role: User["role"],
+    authProvider?: string
+  ) => Promise<void>;
   logout: () => void;
   updateProfile: (data: Partial<User>) => void;
   clearError: () => void;
@@ -77,7 +154,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (!context) {
-    throw new Error('useAuth must be used within an AuthProvider');
+    throw new Error("useAuth must be used within an AuthProvider");
   }
   return context;
 };
@@ -85,106 +162,83 @@ export const useAuth = () => {
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [state, dispatch] = useReducer(authReducer, initialState);
 
-  // Check for existing token on mount
   useEffect(() => {
-    const checkAuthToken = async () => {
-      const token = localStorage.getItem('authToken');
-      if (token) {
-        try {
-          const data = await authAPI.getCurrentUser();
-          const user: User = {
-            id: data.id || data._id || '1',
-            email: data.email,
-            name: data.name || data.username,
-            role: data.role || 'participant',
-            avatar: data.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${data.email}`,
-            bio: data.bio || '',
-            skills: data.skills || [],
-            university: data.university || '',
-          };
-          dispatch({ type: 'LOGIN_SUCCESS', payload: user });
-        } catch (error) {
-          // Error verifying token, remove it
-          localStorage.removeItem('authToken');
-        }
-      }
-    };
+    const { token, user } = getAuthData();
 
-    checkAuthToken();
+    if (token && user && user.id && user.role) {
+      dispatch({ type: "LOGIN_SUCCESS", payload: user });
+    } else {
+      dispatch({ type: "LOGOUT" });
+    }
+
+    dispatch({ type: "INIT_COMPLETE" });
   }, []);
 
   const login = async (email: string, password: string) => {
-    dispatch({ type: 'LOGIN_START' });
+    dispatch({ type: "LOGIN_START" });
     try {
-      const data = await authAPI.login(email, password);
-      
-      // Map API response to User interface
+      const response = await authAPI.login(email, password);
+
+      const safeUser = response.data?.safeUser || response.data;
+      const token =
+        response.data?.accessToken || response.accessToken || response.token;
+
       const user: User = {
-        id: data.user.id || data.user._id || '1',
-        email: data.user.email,
-        name: data.user.name || data.user.username || email.split('@')[0],
-        role: data.user.role || 'participant',
-        avatar: data.user.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${email}`,
-        bio: data.user.bio || '',
-        skills: data.user.skills || [],
-        university: data.user.university || '',
+        id: safeUser.userid?.toString() || safeUser.id?.toString() || "1",
+        email: safeUser.email || email,
+        name: safeUser.name || safeUser.username || email.split("@")[0],
+        role: safeUser.role || "participant",
+        avatar:
+          safeUser.avatar ||
+          `https://api.dicebear.com/7.x/avataaars/svg?seed=${email}`,
+        bio: safeUser.bio || "",
+        skills: safeUser.skills || [],
+        university: safeUser.university || "",
       };
 
-      // Store authentication token if provided
-      if (data.token) {
-        localStorage.setItem('authToken', data.token);
+      if (token) {
+        setAuthData(user, token);
       }
-      
-      dispatch({ type: 'LOGIN_SUCCESS', payload: user });
+
+      dispatch({ type: "LOGIN_SUCCESS", payload: user });
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Login failed';
-      dispatch({ type: 'LOGIN_FAILURE', payload: errorMessage });
+      const errorMessage =
+        error instanceof Error ? error.message : "Login failed";
+      dispatch({ type: "LOGIN_FAILURE", payload: errorMessage });
       throw error;
     }
   };
 
-  const signup = async (email: string, password: string, name: string, role: User['role']) => {
-    dispatch({ type: 'LOGIN_START' });
+  const signup = async (
+    email: string,
+    password: string,
+    name: string,
+    role: User["role"],
+    authProvider: string = "email"
+  ) => {
+    dispatch({ type: "LOGIN_START" });
     try {
-      const data = await authAPI.signup(email, password, name, role);
-      
-      // Map API response to User interface
-      const newUser: User = {
-        id: data.user.id || data.user._id || Date.now().toString(),
-        email: data.user.email,
-        name: data.user.name || name,
-        role: data.user.role || role,
-        avatar: data.user.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${email}`,
-        bio: data.user.bio || '',
-        skills: data.user.skills || [],
-        university: data.user.university || '',
-      };
-
-      // Store authentication token if provided
-      if (data.token) {
-        localStorage.setItem('authToken', data.token);
-      }
-      
-      dispatch({ type: 'LOGIN_SUCCESS', payload: newUser });
+      await authAPI.signup(email, password, name, role, authProvider);
+      dispatch({ type: "CLEAR_ERROR" });
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Signup failed';
-      dispatch({ type: 'LOGIN_FAILURE', payload: errorMessage });
+      const errorMessage =
+        error instanceof Error ? error.message : "Signup failed";
+      dispatch({ type: "LOGIN_FAILURE", payload: errorMessage });
       throw error;
     }
   };
 
   const logout = () => {
-    // Remove token from localStorage
-    localStorage.removeItem('authToken');
-    dispatch({ type: 'LOGOUT' });
+    clearAuthData();
+    dispatch({ type: "LOGOUT" });
   };
 
   const updateProfile = (data: Partial<User>) => {
-    dispatch({ type: 'UPDATE_PROFILE', payload: data });
+    dispatch({ type: "UPDATE_PROFILE", payload: data });
   };
 
   const clearError = () => {
-    dispatch({ type: 'CLEAR_ERROR' });
+    dispatch({ type: "CLEAR_ERROR" });
   };
 
   const value: AuthContextType = {

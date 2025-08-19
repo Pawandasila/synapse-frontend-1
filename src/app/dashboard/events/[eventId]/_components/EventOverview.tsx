@@ -3,31 +3,7 @@
 import { Calendar, Users, MapPin, Info, Palette, Clock, Building } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ReactElement } from 'react';
-
-interface Event {
-  EventID: number;
-  OrganizerID: number;
-  Name: string;
-  Description: string;
-  Theme: string;
-  Mode: 'Online' | 'Offline';
-  StartDate: string;
-  EndDate: string;
-  SubmissionDeadline: string;
-  ResultDate: string;
-  Rules: string;
-  Timeline: string;
-  Tracks: string;
-  Prizes: string;
-  MaxTeamSize: number;
-  Sponsors: string;
-  IsActive: boolean;
-  CreatedAt: string;
-  organizerName?: string;
-  registeredTeams?: number;
-  totalParticipants?: number;
-  userRegistered?: boolean;
-}
+import { Event } from './types';
 
 interface EventOverviewProps {
   event: Event;
@@ -120,7 +96,9 @@ export const EventOverview = ({ event, formatDate, formatList }: EventOverviewPr
               </div>
               <div className="bg-muted/30 rounded-lg p-4 text-center">
                 <p className="text-xs text-muted-foreground uppercase tracking-wide">Results</p>
-                <p className="font-semibold mt-1">{formatDate(event.ResultDate)}</p>
+                <p className="font-semibold mt-1">
+                  {event.ResultDate ? formatDate(event.ResultDate) : 'TBD'}
+                </p>
               </div>
             </div>
           </div>

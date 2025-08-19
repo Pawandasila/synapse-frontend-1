@@ -5,31 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-
-interface Event {
-  EventID: number;
-  OrganizerID: number;
-  Name: string;
-  Description: string;
-  Theme: string;
-  Mode: 'Online' | 'Offline';
-  StartDate: string;
-  EndDate: string;
-  SubmissionDeadline: string;
-  ResultDate: string;
-  Rules: string;
-  Timeline: string;
-  Tracks: string;
-  Prizes: string;
-  MaxTeamSize: number;
-  Sponsors: string;
-  IsActive: boolean;
-  CreatedAt: string;
-  organizerName?: string;
-  registeredTeams?: number;
-  totalParticipants?: number;
-  userRegistered?: boolean;
-}
+import { Event } from './types';
 
 interface EventSidebarProps {
   event: Event;
@@ -69,7 +45,7 @@ export const EventSidebar = ({ event, isRegistered, onRegister, formatDateTime }
                 Register Now
               </Button>
               <p className="text-xs text-muted-foreground text-center">
-                Join {event.registeredTeams} other teams already registered
+                Join other teams in this exciting event
               </p>
             </div>
           )}
@@ -95,11 +71,15 @@ export const EventSidebar = ({ event, isRegistered, onRegister, formatDateTime }
           </div>
           <div className="flex justify-between items-center">
             <span className="text-sm text-muted-foreground">Submission Deadline</span>
-            <span className="text-sm font-medium">{formatDateTime(event.SubmissionDeadline)}</span>
+            <span className="text-sm font-medium">
+              {event.SubmissionDeadline ? formatDateTime(event.SubmissionDeadline) : 'TBD'}
+            </span>
           </div>
           <div className="flex justify-between items-center">
             <span className="text-sm text-muted-foreground">Results</span>
-            <span className="text-sm font-medium">{formatDateTime(event.ResultDate)}</span>
+            <span className="text-sm font-medium">
+              {event.ResultDate ? formatDateTime(event.ResultDate) : 'TBD'}
+            </span>
           </div>
         </CardContent>
       </Card>
@@ -114,12 +94,12 @@ export const EventSidebar = ({ event, isRegistered, onRegister, formatDateTime }
         </CardHeader>
         <CardContent className="space-y-3">
           <div className="flex justify-between items-center">
-            <span className="text-sm text-muted-foreground">Registered Teams</span>
-            <span className="text-lg font-bold text-primary">{event.registeredTeams}</span>
+            <span className="text-sm text-muted-foreground">Event Mode</span>
+            <span className="text-lg font-bold text-primary">{event.Mode}</span>
           </div>
           <div className="flex justify-between items-center">
-            <span className="text-sm text-muted-foreground">Total Participants</span>
-            <span className="text-lg font-bold text-blue-600">{event.totalParticipants}</span>
+            <span className="text-sm text-muted-foreground">Event Theme</span>
+            <span className="text-lg font-bold text-blue-600">{event.Theme}</span>
           </div>
           <div className="flex justify-between items-center">
             <span className="text-sm text-muted-foreground">Max Team Size</span>
@@ -140,11 +120,11 @@ export const EventSidebar = ({ event, isRegistered, onRegister, formatDateTime }
           <div className="flex items-center gap-3">
             <Avatar className="h-10 w-10">
               <AvatarFallback className="bg-primary/10 text-primary">
-                {event.organizerName?.charAt(0) || 'O'}
+                O{event.OrganizerID}
               </AvatarFallback>
             </Avatar>
             <div>
-              <div className="font-medium">{event.organizerName}</div>
+              <div className="font-medium">Organizer #{event.OrganizerID}</div>
               <div className="text-sm text-muted-foreground">Event Organizer</div>
             </div>
           </div>

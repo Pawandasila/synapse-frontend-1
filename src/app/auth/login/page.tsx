@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
@@ -11,6 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { toast } from 'sonner';
 import { Eye, EyeOff, Github, Mail, Loader2, ArrowRight, Trophy, Users, Target, Sparkles } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 
 const LoginPage = () => {
   const [email, setEmail] = useState('');
@@ -23,14 +23,13 @@ const LoginPage = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    clearError(); // Clear any previous errors
+    clearError();
 
     try {
       await login(email, password);
       toast.success('Welcome back!');
       router.push('/dashboard');
     } catch (error) {
-      // Error is now handled by the context and displayed via the error state
       const errorMessage = error instanceof Error ? error.message : 'Invalid credentials. Please try again.';
       toast.error(errorMessage);
     } finally {
@@ -57,12 +56,12 @@ const LoginPage = () => {
                   <span className="text-2xl font-bold">Synapse</span>
                 </div>
                 <h1 className="text-3xl font-bold mb-4 leading-tight">
-                  Join the Future of
+                  Welcome Back to
                   <br />
                   <span className="text-white/90">Competitive Innovation</span>
                 </h1>
                 <p className="text-white/80 text-lg leading-relaxed">
-                  Connect with developers, participate in cutting-edge competitions, 
+                  Continue your journey with developers, participate in cutting-edge competitions, 
                   and unlock your potential in the global tech ecosystem.
                 </p>
               </div>
@@ -157,23 +156,32 @@ const LoginPage = () => {
                         Forgot password?
                       </Link>
                     </div>
-                    <Button 
-                      type="submit" 
-                      className="w-full h-11 font-semibold bg-gradient-to-r from-orange-400 to-orange-500 hover:from-orange-500 hover:to-orange-600 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300" 
-                      disabled={isLoading}
-                    >
-                      {isLoading ? (
-                        <>
-                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                          Signing in...
-                        </>
-                      ) : (
-                        <>
-                          Sign In
-                          <ArrowRight className="ml-2 h-4 w-4" />
-                        </>
-                      )}
-                    </Button>
+
+                    {error && (
+                      <div className="text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 p-3 rounded-lg border border-red-200 dark:border-red-800">
+                        {error}
+                      </div>
+                    )}
+
+                    <div className="pt-1">
+                      <Button 
+                        type="submit" 
+                        className="w-full h-11 font-semibold bg-gradient-to-r from-orange-400 to-orange-500 hover:from-orange-500 hover:to-orange-600 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300" 
+                        disabled={isLoading}
+                      >
+                        {isLoading ? (
+                          <>
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            Signing in...
+                          </>
+                        ) : (
+                          <>
+                            Sign In
+                            <ArrowRight className="ml-2 h-4 w-4" />
+                          </>
+                        )}
+                      </Button>
+                    </div>
                   </form>
 
                   <div className="relative py-1">
@@ -206,7 +214,7 @@ const LoginPage = () => {
                     </Button>
                   </div>
 
-                  <p className="text-center text-xs text-muted-foreground">
+                  <p className="text-center text-xs text-muted-foreground pt-1">
                     Don't have an account?{' '}
                     <Link href="/auth/signup" className="font-semibold text-primary hover:underline">
                       Sign up

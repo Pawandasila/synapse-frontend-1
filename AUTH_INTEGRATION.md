@@ -38,9 +38,16 @@ The authentication context has been updated to integrate with the real API endpo
   "email": "user@example.com",
   "password": "userpassword",
   "name": "User Name",
-  "role": "participant" // or "organizer", "judge"
+  "role": "participant",
+  "authProvider": "email"
 }
 ```
+
+#### Auth Provider Logic:
+- **Email Signup**: When user fills the signup form, `authProvider` is automatically set to "email"
+- **Google Signup**: When user clicks Google signup button, `authProvider` will be set to "google" 
+- **GitHub Signup**: When user clicks GitHub signup button, `authProvider` will be set to "github"
+- **Login**: No authProvider needed - the backend determines provider from login method
 
 #### Expected API Response Format:
 ```json
@@ -92,6 +99,7 @@ const events = await eventsAPI.getAll();
 
 #### Signup Page (`src/app/auth/signup/page.tsx`)
 - Role selection (participant, organizer, judge)
+- Auth provider selection (email, google, github)
 - Form validation including password confirmation
 - Error handling with descriptive messages
 
