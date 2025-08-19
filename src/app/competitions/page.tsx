@@ -304,6 +304,7 @@ const CompetitionsPage = () => {
                   <button
                     onClick={() => setSelectedCompetition(null)}
                     className="text-gray-400 hover:text-white text-2xl"
+                    aria-label="Close modal"
                   >
                     ×
                   </button>
