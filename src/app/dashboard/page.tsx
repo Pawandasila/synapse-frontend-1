@@ -40,7 +40,7 @@ const DashboardPage = () => {
       {/* Welcome Section */}
       <div className="space-y-2">
         <h2 className="text-2xl font-bold">Welcome back, {user?.name}! 👋</h2>
-        <p className="text-muted-foreground">Here's what's happening with your competitions today.</p>
+        <p className="text-muted-foreground">Here&apos;s what&apos;s happening with your competitions today.</p>
       </div>
 
       {/* Stats Grid */}
@@ -144,7 +144,7 @@ const DashboardPage = () => {
           <Card>
             <CardHeader>
               <CardTitle>Upcoming Events</CardTitle>
-              <CardDescription>Don't miss these events</CardDescription>
+              <CardDescription>Don&apos;t miss these events</CardDescription>
             </CardHeader>
             <CardContent className="space-y-3">
               <div className="flex items-center gap-3 p-3 border rounded-lg">

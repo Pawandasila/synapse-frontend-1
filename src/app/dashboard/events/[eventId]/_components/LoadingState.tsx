@@ -1,8 +1,6 @@
 'use client';
 
-interface LoadingStateProps {}
-
-export const LoadingState = ({}: LoadingStateProps) => {
+export const LoadingState = () => {
   return (
     <div className="p-6 space-y-6">
       <div className="animate-pulse space-y-4">

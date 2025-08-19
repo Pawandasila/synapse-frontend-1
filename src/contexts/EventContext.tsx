@@ -87,7 +87,7 @@ type EventAction =
   | { type: 'ADD_TEAM'; payload: Team }
   | { type: 'SET_SUBMISSIONS'; payload: Submission[] }
   | { type: 'ADD_SUBMISSION'; payload: Submission }
-  | { type: 'UPDATE_SUBMISSION_SCORE'; payload: { submissionId: string; score: any } }
+  | { type: 'UPDATE_SUBMISSION_SCORE'; payload: { submissionId: string; score: { judgeId: string; judgeName: string; innovation: number; technical: number; presentation: number; impact: number; feedback: string; } } }
   | { type: 'SET_SELECTED_EVENT'; payload: Event | null };
 
 const initialState: EventState = {
@@ -146,7 +146,7 @@ interface EventContextType extends EventState {
   registerForEvent: (eventId: string) => Promise<void>;
   createTeam: (team: Omit<Team, 'id'>) => Promise<void>;
   submitProject: (submission: Omit<Submission, 'id' | 'submittedAt'>) => Promise<void>;
-  scoreSubmission: (submissionId: string, score: any) => Promise<void>;
+  scoreSubmission: (submissionId: string, score: { judgeId: string; judgeName: string; innovation: number; technical: number; presentation: number; impact: number; feedback: string; }) => Promise<void>;
   fetchMyEvents: () => Promise<void>;
   fetchSubmissions: (eventId?: string) => Promise<void>;
 }
@@ -215,7 +215,7 @@ export const EventProvider = ({ children }: { children: ReactNode }) => {
     dispatch({ type: 'ADD_SUBMISSION', payload: newSubmission });
   };
 
-  const scoreSubmission = async (submissionId: string, score: any) => {
+  const scoreSubmission = async (submissionId: string, score: { judgeId: string; judgeName: string; innovation: number; technical: number; presentation: number; impact: number; feedback: string; }) => {
     dispatch({ type: 'UPDATE_SUBMISSION_SCORE', payload: { submissionId, score } });
   };
 

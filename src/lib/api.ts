@@ -27,7 +27,7 @@ const createHeaders = (includeAuth: boolean = true): HeadersInit => {
   return headers;
 };
 
-export const apiRequest = async <T = any>(
+export const apiRequest = async <T = unknown>(
   endpoint: string,
   options: RequestInit = {},
   includeAuth: boolean = true
@@ -104,7 +104,7 @@ export const authAPI = {
   // Note: No getCurrentUser endpoint available in backend
   // getCurrentUser functionality is handled through cookie restoration
   
-  updateProfile: (data: any) =>
+  updateProfile: (data: Record<string, unknown>) =>
     apiRequest("/users/profile", {
       method: "PUT",
       body: JSON.stringify(data),
@@ -132,13 +132,13 @@ export const eventsAPI = {
   // Get event by ID
   getById: (id: string) => apiRequest(`/events/${id}`),
 
-  create: (eventData: any) =>
+  create: (eventData: Record<string, unknown>) =>
     apiRequest("/events", {
       method: "POST",
       body: JSON.stringify(eventData),
     }),
 
-  update: (id: string, eventData: any) =>
+  update: (id: string, eventData: Record<string, unknown>) =>
     apiRequest(`/events/${id}`, {
       method: "PUT",
       body: JSON.stringify(eventData),
