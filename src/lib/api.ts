@@ -112,28 +112,46 @@ export const authAPI = {
 };
 
 export const eventsAPI = {
-  // Get all events
-  getAll: () => apiRequest("/events"),
-
-  // Search events with query parameters
-  search: (query?: string, mode?: string, theme?: string) => {
+  // Get all events with pagination
+  getAll: (page: number = 1) => {
     const params = new URLSearchParams();
-    if (query) params.append('query', query);
-    if (mode) params.append('mode', mode);
-    if (theme) params.append('theme', theme);
+    params.append('page', page.toString());
+    return apiRequest(`/events?${params.toString()}`);
+  },
+
+  // Search events with query parameters and pagination
+  search: (query?: string, mode?: string, theme?: string, page: number = 1) => {
+    const params = new URLSearchParams();
+    
+    // Only add query parameter if it has at least 2 characters (backend validation requirement)
+    if (query && query.trim().length >= 2) {
+      params.append('q', query.trim());
+    }
+    
+    if (mode && mode !== 'all') params.append('mode', mode);
+    if (theme && theme !== 'all') params.append('theme', theme);
+    params.append('page', page.toString());
     
     const queryString = params.toString();
+    console.log(queryString)
     return apiRequest(`/events/search${queryString ? `?${queryString}` : ''}`);
   },
 
   // Get upcoming events
   getUpcoming: () => apiRequest("/events/upcoming"),
 
+  // Get events by organizer
+  getByOrganizer: (organizerId: string, page: number = 1) => {
+    const params = new URLSearchParams();
+    params.append('page', page.toString());
+    return apiRequest(`/events/organizer/${organizerId}?${params.toString()}`);
+  },
+
   // Get event by ID
   getById: (id: string) => apiRequest(`/events/${id}`),
 
   create: (eventData: Record<string, unknown>) =>
-    apiRequest("/events", {
+    apiRequest("/events/create", {
       method: "POST",
       body: JSON.stringify(eventData),
     }),

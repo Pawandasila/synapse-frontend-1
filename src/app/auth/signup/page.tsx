@@ -25,11 +25,40 @@ const SignUpPage = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [passwordValidation, setPasswordValidation] = useState({
+    hasUppercase: false,
+    hasLowercase: false,
+    hasNumber: false,
+    isValid: false
+  });
   const { signup, error, clearError } = useAuth();
   const router = useRouter();
 
+  // Password validation function
+  const validatePassword = (password: string) => {
+    const hasUppercase = /[A-Z]/.test(password);
+    const hasLowercase = /[a-z]/.test(password);
+    const hasNumber = /\d/.test(password);
+    const isValid = hasUppercase && hasLowercase && hasNumber && password.length >= 8;
+    
+    setPasswordValidation({
+      hasUppercase,
+      hasLowercase,
+      hasNumber,
+      isValid
+    });
+    
+    return isValid;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Validate password format
+    if (!validatePassword(formData.password)) {
+      toast.error('Password must contain at least one uppercase letter, one lowercase letter, one number, and be at least 8 characters long');
+      return;
+    }
     
     if (formData.password !== formData.confirmPassword) {
       toast.error('Passwords do not match');
@@ -192,9 +221,17 @@ const SignUpPage = () => {
                           type={showPassword ? 'text' : 'password'}
                           placeholder="Create a password"
                           value={formData.password}
-                          onChange={(e) => setFormData(prev => ({ ...prev, password: e.target.value }))}
+                          onChange={(e) => {
+                            const newPassword = e.target.value;
+                            setFormData(prev => ({ ...prev, password: newPassword }));
+                            if (newPassword) {
+                              validatePassword(newPassword);
+                            }
+                          }}
                           required
-                          className="h-11 bg-muted/30 border-border/50 focus:border-primary/50 pr-12 transition-all duration-200"
+                          className={`h-11 bg-muted/30 border-border/50 focus:border-primary/50 pr-12 transition-all duration-200 ${
+                            formData.password && !passwordValidation.isValid ? 'border-red-500 focus:border-red-500' : ''
+                          }`}
                         />
                         <Button
                           type="button"
@@ -210,6 +247,31 @@ const SignUpPage = () => {
                           )}
                         </Button>
                       </div>
+                      
+                      {/* Password Requirements */}
+                      {formData.password && (
+                        <div className="space-y-1 mt-2">
+                          <p className="text-xs text-muted-foreground">Password requirements:</p>
+                          <div className="space-y-1">
+                            <div className={`flex items-center gap-2 text-xs ${passwordValidation.hasUppercase ? 'text-green-600' : 'text-muted-foreground'}`}>
+                              <div className={`w-1.5 h-1.5 rounded-full ${passwordValidation.hasUppercase ? 'bg-green-600' : 'bg-muted-foreground/50'}`} />
+                              At least one uppercase letter
+                            </div>
+                            <div className={`flex items-center gap-2 text-xs ${passwordValidation.hasLowercase ? 'text-green-600' : 'text-muted-foreground'}`}>
+                              <div className={`w-1.5 h-1.5 rounded-full ${passwordValidation.hasLowercase ? 'bg-green-600' : 'bg-muted-foreground/50'}`} />
+                              At least one lowercase letter
+                            </div>
+                            <div className={`flex items-center gap-2 text-xs ${passwordValidation.hasNumber ? 'text-green-600' : 'text-muted-foreground'}`}>
+                              <div className={`w-1.5 h-1.5 rounded-full ${passwordValidation.hasNumber ? 'bg-green-600' : 'bg-muted-foreground/50'}`} />
+                              At least one number
+                            </div>
+                            <div className={`flex items-center gap-2 text-xs ${formData.password.length >= 8 ? 'text-green-600' : 'text-muted-foreground'}`}>
+                              <div className={`w-1.5 h-1.5 rounded-full ${formData.password.length >= 8 ? 'bg-green-600' : 'bg-muted-foreground/50'}`} />
+                              At least 8 characters
+                            </div>
+                          </div>
+                        </div>
+                      )}
                     </div>
                     
                     <div className="space-y-2">

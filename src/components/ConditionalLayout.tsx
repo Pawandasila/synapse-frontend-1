@@ -12,14 +12,16 @@ export default function ConditionalLayout({
 }) {
   const pathname = usePathname();
   const [mounted, setMounted] = useState(false);
-  
+
+  const isDashboard = (pathname.includes('/dashboard'));
+  const isUnauthorized = (pathname.includes('/unauthorized'));
+
   useEffect(() => {
     setMounted(true);
   }, []);
   
-  // Prevent hydration mismatch by not rendering differently on server vs client
+
   if (!mounted) {
-    // Default server-side render - assume not auth page
     return (
       <>
         <Navbar />
@@ -37,17 +39,17 @@ export default function ConditionalLayout({
 
   return (
     <>
-      {!isAuthPage && <Navbar />}
-      <main className={isAuthPage ? "min-h-screen" : "min-h-screen pt-16"}>
+      {!isAuthPage && !isUnauthorized && <Navbar />}
+      <main className={isAuthPage || isUnauthorized ? "min-h-screen" : "min-h-screen pt-16"}>
         {isAuthPage ? (
           children
         ) : (
-          <div className="container mx-auto max-w-[85rem] px-4 sm:px-6 lg:px-8">
+          <div className={`container mx-auto ${isDashboard ? "max-w-full" : "max-w-7xl"} px-4 sm:px-6 lg:px-8`}>
             {children}
           </div>
         )}
       </main>
-      {!isAuthPage && <Footer />}
+      {!isAuthPage && !isUnauthorized && !isDashboard && <Footer />}
     </>
   );
 }
