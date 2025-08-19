@@ -1,10 +1,11 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import Link from 'next/link';
-import { useAuth } from '@/contexts/AuthContext';
-import { Button } from '@/components/ui/button';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { useState } from "react";
+import Link from "next/link";
+import { useAuth } from "@/contexts/AuthContext";
+import { useTheme } from "next-themes";
+import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -12,23 +13,30 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
-import { useTheme } from 'next-themes';
+} from "@/components/ui/dropdown-menu";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { Input } from "@/components/ui/input";
 import {
   Menu,
   Search,
   Bell,
-  User,
+  MessageCircle,
   Settings,
   LogOut,
   Sun,
   Moon,
   Trophy,
-  Calendar,
+  Briefcase,
   Users,
   Target,
-} from 'lucide-react';
+  ChevronDown,
+  Code2,
+  Plus,
+  Building2,
+  GraduationCap,
+  BookOpen,
+} from "lucide-react";
+import ThemeToggleButton from "./ui/theme-toggle-button";
 
 const Navbar = () => {
   const { user, isAuthenticated, logout } = useAuth();
@@ -36,161 +44,279 @@ const Navbar = () => {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
 
   const navItems = [
-    { href: '/', label: 'Home', icon: Trophy },
-    { href: '/events', label: 'Events', icon: Calendar },
-    { href: '/competitions', label: 'Competitions', icon: Target },
-    { href: '/community', label: 'Community', icon: Users },
+    { href: "/competitions", label: "Competitions", icon: Trophy },
   ];
 
   const userMenuItems = [
-    { href: '/dashboard', label: 'Dashboard', icon: User },
-    { href: '/profile', label: 'Profile', icon: Settings },
+    { href: "/dashboard", label: "Dashboard", icon: Target },
+    { href: "/profile", label: "Profile", icon: Settings },
   ];
 
   return (
-    <nav className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="container mx-auto px-4">
-        <div className="flex h-16 items-center justify-between">
-          {/* Logo */}
-          <Link href="/" className="flex items-center space-x-2">
-            <div className="h-8 w-8 rounded-lg gradient-primary flex items-center justify-center">
-              <span className="text-white font-bold text-lg">S</span>
+    <header className="fixed top-0 left-0 w-full h-16 bg-background border-b border-border z-[999] transition-all duration-[400ms] max-w-[1600px] mx-auto">
+      <nav
+        aria-label="Main Navigation"
+        className="flex justify-between items-center w-full h-full px-16"
+      >
+        <div className="flex items-center gap-3">
+          <Link
+            href="/"
+            className="flex items-center cursor-pointer hover:opacity-80 transition-opacity"
+            aria-label="Synapse Logo"
+          >
+            <div className="h-8 w-20 bg-primary rounded-lg flex items-center justify-center">
+              <span className="text-primary-foreground font-bold text-lg">
+                Synapse
+              </span>
             </div>
-            <span className="text-xl font-bold bg-clip-text text-transparent gradient-primary">
-              Synapse
-            </span>
           </Link>
 
-          {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center space-x-8">
+          <div className="hidden md:block relative z-[9] w-[230px]">
+            <div className="relative w-full">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                type="text"
+                placeholder="Search Opportunities"
+                className="w-full pl-10 h-9 bg-muted border border-border rounded-md text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-colors"
+              />
+            </div>
+          </div>
+        </div>
+
+        <div className="flex items-center">
+          <div className="hidden lg:flex items-center gap-6 mr-8" role="menu">
             {navItems.map((item) => (
               <Link
                 key={item.href}
                 href={item.href}
-                className="flex items-center space-x-1 text-muted-foreground hover:text-foreground transition-fast"
+                className="text-foreground hover:text-primary transition-colors text-sm font-medium py-2"
+                aria-label={`Browse ${item.label.toLowerCase()}`}
               >
-                <item.icon className="h-4 w-4" />
-                <span>{item.label}</span>
+                {item.label}
               </Link>
             ))}
+
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button
+                  className="flex items-center gap-1 text-foreground hover:text-primary transition-colors text-sm font-medium py-2"
+                  aria-label="Browse More Categories"
+                >
+                  More
+                  <ChevronDown className="h-4 w-4" />
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-48">
+                <DropdownMenuItem asChild>
+                  <Link href="/hackathons" className="flex items-center">
+                    <Code2 className="mr-2 h-4 w-4" />
+                    Hackathons
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link href="/events" className="flex items-center">
+                    <Trophy className="mr-2 h-4 w-4" />
+                    Events
+                  </Link>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
 
-          {/* Right side actions */}
-          <div className="flex items-center space-x-4">
-            {/* Search */}
+          <div className="hidden md:flex items-center mr-4">
+            <Button
+              variant="outline"
+              size="sm"
+              className="flex items-center gap-2 border-border hover:bg-accent hover:text-accent-foreground transition-colors"
+              aria-label="Host"
+            >
+              <Plus className="h-4 w-4" />
+              Host
+            </Button>
+          </div>
+
+          <div className="hidden md:flex items-center mr-6">
+            <Button
+              variant="outline"
+              size="sm"
+              className="flex items-center gap-2 border-border hover:bg-accent hover:text-accent-foreground transition-colors"
+              aria-label="For Business"
+            >
+              <Building2 className="h-4 w-4" />
+              For Business
+            </Button>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <ThemeToggleButton start="top-right" />
+
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => setIsSearchOpen(!isSearchOpen)}
-              className="relative"
+              className="w-10 h-10 rounded-full hover:bg-accent hover:text-accent-foreground transition-colors"
+              aria-label="Open chat"
             >
-              <Search className="h-4 w-4" />
-              <span className="sr-only">Search</span>
+              <MessageCircle className="h-5 w-5 text-foreground hover:text-primary" />
             </Button>
 
-            {/* Theme toggle */}
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}
+              className="w-10 h-10 rounded-full hover:bg-accent hover:text-accent-foreground transition-colors"
+              aria-label="Notifications"
             >
-              <Sun className="h-4 w-4 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
-              <Moon className="absolute h-4 w-4 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
-              <span className="sr-only">Toggle theme</span>
+              <Bell className="h-5 w-5 text-foreground hover:text-primary" />
             </Button>
 
             {isAuthenticated ? (
-              <>
-                {/* Notifications */}
-                <Button variant="ghost" size="sm" className="relative">
-                  <Bell className="h-4 w-4" />
-                  <div className="absolute -top-1 -right-1 h-3 w-3 bg-red-500 rounded-full flex items-center justify-center">
-                    <span className="text-[10px] text-white font-medium">3</span>
-                  </div>
-                </Button>
-
-                {/* User menu */}
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" className="relative h-8 w-8 rounded-full">
-                      <Avatar className="h-8 w-8">
-                        <AvatarImage src={user?.avatar} alt={user?.name} />
-                        <AvatarFallback>{user?.name?.[0]?.toUpperCase()}</AvatarFallback>
-                      </Avatar>
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent className="w-56" align="end" forceMount>
-                    <DropdownMenuLabel className="font-normal">
-                      <div className="flex flex-col space-y-1">
-                        <p className="text-sm font-medium leading-none">{user?.name}</p>
-                        <p className="text-xs leading-none text-muted-foreground">
-                          {user?.email}
-                        </p>
-                      </div>
-                    </DropdownMenuLabel>
-                    <DropdownMenuSeparator />
-                    {userMenuItems.map((item) => (
-                      <DropdownMenuItem key={item.href} asChild>
-                        <Link href={item.href} className="flex items-center">
-                          <item.icon className="mr-2 h-4 w-4" />
-                          <span>{item.label}</span>
-                        </Link>
-                      </DropdownMenuItem>
-                    ))}
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem onClick={logout} className="text-red-600 dark:text-red-400">
-                      <LogOut className="mr-2 h-4 w-4" />
-                      <span>Log out</span>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button
+                    className="w-10 h-10 rounded-full focus:outline-none focus:ring-2 focus:ring-ring"
+                    aria-label="User menu"
+                  >
+                    <Avatar className="w-10 h-10">
+                      <AvatarImage src={user?.avatar} alt="User avatar" />
+                      <AvatarFallback className="bg-primary text-primary-foreground text-sm">
+                        {user?.name?.[0]?.toUpperCase() || "U"}
+                      </AvatarFallback>
+                    </Avatar>
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56">
+                  <DropdownMenuLabel className="font-normal">
+                    <div className="flex flex-col space-y-1">
+                      <p className="text-sm font-medium leading-none text-foreground">
+                        {user?.name}
+                      </p>
+                      <p className="text-xs leading-none text-muted-foreground">
+                        {user?.email}
+                      </p>
+                      <p className="text-xs leading-none text-muted-foreground capitalize">
+                        {user?.role}
+                      </p>
+                    </div>
+                  </DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  {userMenuItems.map((item) => (
+                    <DropdownMenuItem key={item.href} asChild>
+                      <Link href={item.href} className="flex items-center">
+                        <item.icon className="mr-2 h-4 w-4" />
+                        <span>{item.label}</span>
+                      </Link>
                     </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </>
+                  ))}
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem
+                    onClick={logout}
+                    className="text-destructive focus:text-destructive"
+                  >
+                    <LogOut className="mr-2 h-4 w-4" />
+                    <span>Log out</span>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             ) : (
-              <div className="flex items-center space-x-2">
-                <Button variant="ghost" size="sm" asChild>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  asChild
+                  className="hidden sm:inline-flex text-foreground hover:text-primary"
+                >
                   <Link href="/auth/login">Sign In</Link>
                 </Button>
-                <Button size="sm" asChild>
+                <Button
+                  size="sm"
+                  asChild
+                  className="bg-primary text-primary-foreground hover:bg-primary/90"
+                >
                   <Link href="/auth/signup">Sign Up</Link>
                 </Button>
               </div>
             )}
 
-            {/* Mobile menu */}
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setIsSearchOpen(!isSearchOpen)}
+              className="md:hidden w-10 h-10"
+              aria-label="Search"
+            >
+              <Search className="h-5 w-5" />
+            </Button>
+
+            <Button
+              variant="ghost"
+              size="sm"
+              className="md:hidden w-10 h-10"
+              aria-label="For Business"
+            >
+              <Building2 className="h-5 w-5" />
+            </Button>
+
             <Sheet>
               <SheetTrigger asChild>
-                <Button variant="ghost" size="sm" className="md:hidden">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="lg:hidden w-10 h-10"
+                >
                   <Menu className="h-5 w-5" />
                   <span className="sr-only">Toggle menu</span>
                 </Button>
               </SheetTrigger>
               <SheetContent side="right" className="w-[300px] sm:w-[400px]">
-                <div className="flex flex-col space-y-4 mt-4">
-                  {navItems.map((item) => (
+                <div className="flex flex-col space-y-6 mt-6">
+                  <Link href="/" className="flex items-center space-x-2">
+                    <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center">
+                      <span className="text-primary-foreground font-bold text-lg">
+                        S
+                      </span>
+                    </div>
+                    <span className="text-xl font-bold text-primary">
+                      Synapse
+                    </span>
+                  </Link>
+
+                  <div className="flex flex-col space-y-3">
+                    {navItems.map((item) => (
+                      <Link
+                        key={item.href}
+                        href={item.href}
+                        className="flex items-center space-x-3 text-lg font-medium text-foreground hover:text-primary transition-colors p-2 rounded-lg hover:bg-accent"
+                      >
+                        <item.icon className="h-5 w-5" />
+                        <span>{item.label}</span>
+                      </Link>
+                    ))}
+
                     <Link
-                      key={item.href}
-                      href={item.href}
-                      className="flex items-center space-x-2 text-lg hover:text-primary transition-fast"
+                      href="/hackathons"
+                      className="flex items-center space-x-3 text-lg font-medium text-foreground hover:text-primary transition-colors p-2 rounded-lg hover:bg-accent"
                     >
-                      <item.icon className="h-5 w-5" />
-                      <span>{item.label}</span>
+                      <Code2 className="h-5 w-5" />
+                      <span>Hackathons</span>
                     </Link>
-                  ))}
+                  </div>
+
                   {!isAuthenticated && (
                     <>
-                      <hr className="my-4" />
-                      <Link
-                        href="/auth/login"
-                        className="text-lg hover:text-primary transition-fast"
-                      >
-                        Sign In
-                      </Link>
-                      <Link
-                        href="/auth/signup"
-                        className="text-lg hover:text-primary transition-fast"
-                      >
-                        Sign Up
-                      </Link>
+                      <hr className="border-border" />
+                      <div className="flex flex-col space-y-3">
+                        <Link
+                          href="/auth/login"
+                          className="text-lg font-medium text-foreground hover:text-primary transition-colors p-2 rounded-lg hover:bg-accent"
+                        >
+                          Sign In
+                        </Link>
+                        <Link
+                          href="/auth/signup"
+                          className="text-lg font-medium text-primary-foreground bg-primary hover:bg-primary/90 transition-all p-2 rounded-lg text-center"
+                        >
+                          Sign Up
+                        </Link>
+                      </div>
                     </>
                   )}
                 </div>
@@ -198,8 +324,39 @@ const Navbar = () => {
             </Sheet>
           </div>
         </div>
+      </nav>
+
+      {isSearchOpen && (
+        <div className="md:hidden border-t border-border bg-background p-4">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              type="text"
+              placeholder="Search Opportunities"
+              className="w-full pl-10 h-9 bg-muted border border-border rounded-md text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent"
+              autoFocus
+            />
+          </div>
+        </div>
+      )}
+
+      <div className="lg:hidden fixed bottom-0 left-0 w-full bg-background border-t border-border px-4 py-2">
+        <div className="flex justify-center">
+          <Link
+            href="/"
+            className="flex items-center justify-center w-8 h-12"
+            title="Synapse Home"
+            aria-label="Synapse Home"
+          >
+            <div className="h-6 w-6 bg-primary rounded flex items-center justify-center">
+              <span className="text-primary-foreground font-bold text-sm">
+                S
+              </span>
+            </div>
+          </Link>
+        </div>
       </div>
-    </nav>
+    </header>
   );
 };
 
