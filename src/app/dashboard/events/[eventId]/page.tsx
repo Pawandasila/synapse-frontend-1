@@ -1,8 +1,9 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useEvent } from '@/hooks/useEvents';
 import { 
   EventHeader,
   EventHeroCard,
@@ -14,8 +15,7 @@ import {
   EventSidebar,
   LoadingState,
   NotFoundState,
-  type Event,
-  mockEventData
+  type Event
 } from './_components';
 
 const EventDetailPage = () => {
@@ -23,19 +23,9 @@ const EventDetailPage = () => {
   const router = useRouter();
   const eventId = params?.eventId as string;
   
-  const [event, setEvent] = useState<Event | null>(null);
-  const [loading, setLoading] = useState(true);
+  // Use the API hook to fetch event data
+  const { event, loading, error } = useEvent(eventId);
   const [isRegistered, setIsRegistered] = useState(false);
-
-  useEffect(() => {
-    // In real app, fetch event data from API
-    // For now, using mock data
-    setTimeout(() => {
-      setEvent(mockEventData);
-      setIsRegistered(mockEventData.userRegistered || false);
-      setLoading(false);
-    }, 500);
-  }, [eventId]);
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
@@ -62,7 +52,7 @@ const EventDetailPage = () => {
     const now = new Date();
     const start = new Date(event.StartDate);
     const end = new Date(event.EndDate);
-    const submission = new Date(event.SubmissionDeadline);
+    const submission = event.SubmissionDeadline ? new Date(event.SubmissionDeadline) : end;
 
     if (now < start) return { status: 'upcoming', color: 'blue', text: 'Registration Open' };
     if (now >= start && now <= end) return { status: 'live', color: 'green', text: 'Live Now' };
@@ -71,7 +61,6 @@ const EventDetailPage = () => {
   };
 
   const handleRegister = () => {
-    // Handle registration logic
     setIsRegistered(!isRegistered);
   };
 
@@ -87,7 +76,7 @@ const EventDetailPage = () => {
     return <LoadingState />;
   }
 
-  if (!event) {
+  if (error || !event) {
     return <NotFoundState onBack={() => router.back()} />;
   }
 
@@ -102,7 +91,6 @@ const EventDetailPage = () => {
 
       {/* Main Content */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Left Column - Main Info */}
         <div className="lg:col-span-2 space-y-6">
           <EventHeroCard event={event} />
 

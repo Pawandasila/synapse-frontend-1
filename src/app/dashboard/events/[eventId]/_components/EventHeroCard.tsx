@@ -3,31 +3,7 @@
 import { User, MapPin, Users, Target, Heart, Share2 } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-
-interface Event {
-  EventID: number;
-  OrganizerID: number;
-  Name: string;
-  Description: string;
-  Theme: string;
-  Mode: 'Online' | 'Offline';
-  StartDate: string;
-  EndDate: string;
-  SubmissionDeadline: string;
-  ResultDate: string;
-  Rules: string;
-  Timeline: string;
-  Tracks: string;
-  Prizes: string;
-  MaxTeamSize: number;
-  Sponsors: string;
-  IsActive: boolean;
-  CreatedAt: string;
-  organizerName?: string;
-  registeredTeams?: number;
-  totalParticipants?: number;
-  userRegistered?: boolean;
-}
+import { Event } from './types';
 
 interface EventHeroCardProps {
   event: Event;
@@ -47,7 +23,7 @@ export const EventHeroCard = ({ event }: EventHeroCardProps) => {
             <div className="flex flex-wrap items-center gap-4 text-sm">
               <div className="flex items-center gap-2">
                 <User className="h-4 w-4 text-muted-foreground" />
-                <span>by {event.organizerName}</span>
+                <span>by Organizer #{event.OrganizerID}</span>
               </div>
               <div className="flex items-center gap-2">
                 <MapPin className="h-4 w-4 text-muted-foreground" />
@@ -55,11 +31,11 @@ export const EventHeroCard = ({ event }: EventHeroCardProps) => {
               </div>
               <div className="flex items-center gap-2">
                 <Users className="h-4 w-4 text-muted-foreground" />
-                <span>{event.registeredTeams} teams</span>
+                <span>Max team size: {event.MaxTeamSize}</span>
               </div>
               <div className="flex items-center gap-2">
                 <Target className="h-4 w-4 text-muted-foreground" />
-                <span>{event.totalParticipants} participants</span>
+                <span>Event Theme: {event.Theme}</span>
               </div>
             </div>
           </div>
