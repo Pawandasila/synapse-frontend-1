@@ -2,12 +2,7 @@
 
 import {
   CalendarDays,
-  User,
-  Calendar,
   Clock,
-  Upload,
-  Star,
-  Trophy,
   Info,
 } from "lucide-react";
 import {
@@ -79,7 +74,7 @@ export const EventTimeline = ({
         </CardHeader>
         <CardContent className="p-6">
           <div className="space-y-6">
-            {customTimeline.map((item: any, index: number) => {
+            {customTimeline.map((item: { title?: string; description?: string; date: string; time?: string; round?: string }, index: number) => {
               const dateInfo = formatTimelineDate(item.date);
               return (
                 <div key={index} className="flex gap-4">

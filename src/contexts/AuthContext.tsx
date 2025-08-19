@@ -135,6 +135,27 @@ const authReducer = (state: AuthState, action: AuthAction): AuthState => {
   }
 };
 
+interface LoginResponse {
+  data?: {
+    safeUser?: {
+      userid?: number;
+      id?: string;
+      email?: string;
+      name?: string;
+      username?: string;
+      role?: User["role"];
+      avatar?: string;
+      bio?: string;
+      skills?: string[];
+      university?: string;
+    };
+    accessToken?: string;
+  };
+  accessToken?: string;
+  token?: string;
+  [key: string]: unknown;
+}
+
 interface AuthContextType extends AuthState {
   login: (email: string, password: string) => Promise<void>;
   signup: (
@@ -177,23 +198,26 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const login = async (email: string, password: string) => {
     dispatch({ type: "LOGIN_START" });
     try {
-      const response = await authAPI.login(email, password);
+      const response = await authAPI.login(email, password) as LoginResponse;
 
       const safeUser = response.data?.safeUser || response.data;
       const token =
         response.data?.accessToken || response.accessToken || response.token;
 
+      // Extract user data with proper null checks
+      const userData = (safeUser || {}) as Record<string, unknown>;
+
       const user: User = {
-        id: safeUser.userid?.toString() || safeUser.id?.toString() || "1",
-        email: safeUser.email || email,
-        name: safeUser.name || safeUser.username || email.split("@")[0],
-        role: safeUser.role || "participant",
+        id: (userData.userid as number)?.toString() || (userData.id as string)?.toString() || "1",
+        email: (userData.email as string) || email,
+        name: (userData.name as string) || (userData.username as string) || email.split("@")[0],
+        role: (userData.role as User["role"]) || "participant",
         avatar:
-          safeUser.avatar ||
+          (userData.avatar as string) ||
           `https://api.dicebear.com/7.x/avataaars/svg?seed=${email}`,
-        bio: safeUser.bio || "",
-        skills: safeUser.skills || [],
-        university: safeUser.university || "",
+        bio: (userData.bio as string) || "",
+        skills: (userData.skills as string[]) || [],
+        university: (userData.university as string) || "",
       };
 
       if (token) {

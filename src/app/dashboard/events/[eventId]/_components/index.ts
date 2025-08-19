@@ -9,4 +9,3 @@ export { EventSidebar } from './EventSidebar';
 export { LoadingState } from './LoadingState';
 export { NotFoundState } from './NotFoundState';
 export type { Event } from './types';
-export { mockEventData } from './types';

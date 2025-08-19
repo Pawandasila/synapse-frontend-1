@@ -109,7 +109,7 @@ const EventsPage = () => {
   };
 
   const getStatusBadge = (status: string) => {
-    const variants: Record<string, { variant: any; label: string }> = {
+    const variants: Record<string, { variant: "default" | "destructive" | "outline" | "secondary" | null | undefined; label: string }> = {
       upcoming: { variant: 'default', label: 'Upcoming' },
       ongoing: { variant: 'destructive', label: 'Live' },
       completed: { variant: 'secondary', label: 'Completed' },

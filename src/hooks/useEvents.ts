@@ -22,8 +22,12 @@ export interface Event {
   CreatedAt: string;
 }
 
+interface ApiResponse {
+  data?: Event[] | Event;
+  [key: string]: unknown;
+}
+
 const transformEvent = (apiEvent: Event): Event => {
-  // Return the event as-is since we want to use the exact API structure
   return apiEvent;
 };
 
@@ -42,8 +46,8 @@ export const useEvents = () => {
     try {
       setLoading(true);
       setError(null);
-      const response = await eventsAPI.getAll();
-      const eventsData = response.data || response;
+      const response = await eventsAPI.getAll() as ApiResponse;
+      const eventsData = Array.isArray(response) ? response : (response.data as Event[] || []);
 
       const transformedEvents = eventsData.map(transformEvent);
       setEvents(transformedEvents);
@@ -70,8 +74,8 @@ export const useUpcomingEvents = () => {
     try {
       setLoading(true);
       setError(null);
-      const response = await eventsAPI.getUpcoming();
-      const eventsData = response.data || response;
+      const response = await eventsAPI.getUpcoming() as ApiResponse;
+      const eventsData = Array.isArray(response) ? response : (response.data as Event[] || []);
       const transformedEvents = eventsData.map(transformEvent);
       setEvents(transformedEvents);
     } catch (err) {
@@ -103,8 +107,8 @@ export const useEventSearch = () => {
         params.query,
         params.mode,
         params.theme
-      );
-      const eventsData = response.data || response;
+      ) as ApiResponse;
+      const eventsData = Array.isArray(response) ? response : (response.data as Event[] || []);
       const transformedEvents = eventsData.map(transformEvent);
       setEvents(transformedEvents);
     } catch (err) {
@@ -126,8 +130,8 @@ export const useEvent = (id: string | null) => {
     try {
       setLoading(true);
       setError(null);
-      const response = await eventsAPI.getById(eventId);
-      const eventData = response.data || response;
+      const response = await eventsAPI.getById(eventId) as ApiResponse;
+      const eventData = (response.data as Event) || (response as unknown as Event);
       const transformedEvent = transformEvent(eventData);
       setEvent(transformedEvent);
     } catch (err) {
