@@ -101,31 +101,37 @@ const Navbar = () => {
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
               <button
-                className="flex items-center gap-1 text-foreground hover:text-primary transition-colors text-sm font-medium py-2"
-                aria-label="Browse More Categories"
+              className="flex items-center gap-1 text-foreground hover:text-primary transition-colors text-sm font-medium py-2"
+              aria-label="Browse More Categories"
               >
-                More
-                <ChevronDown className="h-4 w-4" />
+              More
+              <ChevronDown className="h-4 w-4" />
               </button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-48">
               <DropdownMenuItem asChild>
-                <Link href="/hackathons" className="flex items-center">
-                <Code2 className="mr-2 h-4 w-4" />
-                Hackathons
-                </Link>
+              <Link href="/hackathons" className="flex items-center">
+              <Code2 className="mr-2 h-4 w-4" />
+              Hackathons
+              </Link>
               </DropdownMenuItem>
               <DropdownMenuItem asChild>
-                <Link href="/events" className="flex items-center">
-                <Trophy className="mr-2 h-4 w-4" />
-                Events
-                </Link>
+              <Link href="/events" className="flex items-center">
+              <Trophy className="mr-2 h-4 w-4" />
+              Events
+              </Link>
               </DropdownMenuItem>
               <DropdownMenuItem asChild>
-                <Link href="/contact" className="flex items-center">
-                <MessageCircle className="mr-2 h-4 w-4" />
-                Contact Us
-                </Link>
+              <Link href="/contact" className="flex items-center">
+              <MessageCircle className="mr-2 h-4 w-4" />
+              Contact Us
+              </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+              <Link href="/about" className="flex items-center">
+              <Users className="mr-2 h-4 w-4" />
+              About Us
+              </Link>
               </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
