@@ -22,6 +22,37 @@ export interface Event {
   CreatedAt: string;
 }
 
+export interface TeamMember {
+  userid: number;
+  name: string;
+  email: string;
+  Role: string;
+}
+
+export interface Team {
+  TeamId: number;
+  TeamName: string;
+  EventId: number;
+  CreatedAt: string;
+  members: TeamMember[];
+}
+
+export interface EnrollmentData {
+  isEnrolled: boolean;
+  enrolledAt: string | null;
+  userRole: string | null;
+  team: Team | null;
+}
+
+export interface ParticipantEventResponse {
+  success: boolean;
+  message: string;
+  data: {
+    event: Event;
+    enrollment: EnrollmentData;
+  };
+}
+
 export interface PaginationInfo {
   currentPage: number;
   totalPages: number;
@@ -247,4 +278,43 @@ export const useEvent = (id: string | null) => {
   }, [id]);
 
   return { event, loading, error, refetch: () => id && fetchEvent(id) };
+};
+
+export const useParticipantEvent = (id: string | null) => {
+  const [event, setEvent] = useState<Event | null>(null);
+  const [enrollment, setEnrollment] = useState<EnrollmentData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchParticipantEvent = async (eventId: string) => {
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await eventsAPI.getForParticipant(eventId) as ParticipantEventResponse;
+      
+      const transformedEvent = transformEvent(response.data.event);
+      setEvent(transformedEvent);
+      setEnrollment(response.data.enrollment);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to fetch participant event data");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (id) {
+      fetchParticipantEvent(id);
+    } else {
+      setLoading(false);
+    }
+  }, [id]);
+
+  return { 
+    event, 
+    enrollment, 
+    loading, 
+    error, 
+    refetch: () => id && fetchParticipantEvent(id) 
+  };
 };

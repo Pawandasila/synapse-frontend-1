@@ -4,87 +4,11 @@ import { useEffect, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
-import {
-  Home,
-  Calendar,
-  Trophy,
-  Users,
-  Settings,
-  User,
-  Bell,
-  BookOpen,
-  BarChart3,
-  MessageSquare,
-  FileText,
-  Award,
-  Target,
-  Search,
-  Plus,
-  TrendingUp,
-  Loader2,
-} from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Separator } from "@/components/ui/separator";
-
-const sidebarMenuGroups = [
-  {
-    title: "Main",
-    items: [
-      { icon: Home, label: "Overview", href: "/dashboard" },
-      {
-        icon: Calendar,
-        label: "Events",
-        href: "/dashboard/events",
-        badge: "3",
-      },
-      { icon: Trophy, label: "Competitions", href: "/dashboard/competitions" },
-      {
-        icon: Target,
-        label: "Challenges",
-        href: "/dashboard/challenges",
-        badge: "New",
-      },
-    ],
-  },
-  {
-    title: "Community",
-    items: [
-      { icon: Users, label: "Teams", href: "/dashboard/teams" },
-      {
-        icon: MessageSquare,
-        label: "Messages",
-        href: "/dashboard/messages",
-        badge: "12",
-      },
-      { icon: BookOpen, label: "Learning", href: "/dashboard/learning" },
-      { icon: Award, label: "Achievements", href: "/dashboard/achievements" },
-    ],
-  },
-  {
-    title: "Analytics",
-    items: [
-      { icon: BarChart3, label: "Performance", href: "/dashboard/analytics" },
-      { icon: TrendingUp, label: "Progress", href: "/dashboard/progress" },
-      { icon: FileText, label: "Reports", href: "/dashboard/reports" },
-    ],
-  },
-  {
-    title: "Account",
-    items: [
-      { icon: User, label: "Profile", href: "/dashboard/profile" },
-      {
-        icon: Bell,
-        label: "Notifications",
-        href: "/dashboard/notifications",
-        badge: "5",
-      },
-      { icon: Settings, label: "Settings", href: "/dashboard/settings" },
-    ],
-  },
-];
+import { Loader2 } from "lucide-react";
+import { getSidebarConfig } from "@/lib/sidebar-config";
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -95,6 +19,9 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
   const router = useRouter();
   const pathname = usePathname();
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+
+  // Get role-based sidebar configuration
+  const sidebarMenuGroups = getSidebarConfig(user?.role || 'participant');
 
   useEffect(() => {
     if (!loading && !isAuthenticated) {

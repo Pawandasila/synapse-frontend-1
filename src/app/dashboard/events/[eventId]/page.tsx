@@ -1,9 +1,11 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useEvent } from '@/hooks/useEvents';
+import { useAuth } from '@/contexts/AuthContext';
+import { apiRequest } from '@/lib/api';
 import { 
   EventHeader,
   EventHeroCard,
@@ -13,19 +15,55 @@ import {
   EventTracks,
   EventPrizes,
   EventSidebar,
+  OrganizerSidebar,
   LoadingState,
   NotFoundState,
   type Event
 } from './_components';
 
 const EventDetailPage = () => {
+  const { user } = useAuth();
   const params = useParams();
   const router = useRouter();
   const eventId = params?.eventId as string;
   
-  // Use the API hook to fetch event data
-  const { event, loading, error } = useEvent(eventId);
+  // Use the regular event hook
+  const { event, loading, error, refetch } = useEvent(eventId);
+  const [userTeam, setUserTeam] = useState<any>(null);
   const [isRegistered, setIsRegistered] = useState(false);
+  const [teamsLoading, setTeamsLoading] = useState(false);
+
+  // Fetch user's teams to check if enrolled in this event
+  useEffect(() => {
+    const fetchUserTeams = async () => {
+      if (!user?.id || !eventId) return;
+      
+      setTeamsLoading(true);
+      try {
+        const response = await apiRequest<{ data: any[] }>('/teams/my-teams');
+        const eventTeam = response.data?.find(team => team.EventId.toString() === eventId);
+        
+        if (eventTeam) {
+          setUserTeam(eventTeam);
+          setIsRegistered(true);
+        } else {
+          setUserTeam(null);
+          setIsRegistered(false);
+        }
+      } catch (error) {
+        console.error('Error fetching user teams:', error);
+        setUserTeam(null);
+        setIsRegistered(false);
+      } finally {
+        setTeamsLoading(false);
+      }
+    };
+
+    fetchUserTeams();
+  }, [user?.id, eventId]);
+
+  // Check if current user is the organizer
+  const isEventOrganizer = user?.id === event?.OrganizerID?.toString();
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
@@ -61,7 +99,25 @@ const EventDetailPage = () => {
   };
 
   const handleRegister = () => {
-    setIsRegistered(!isRegistered);
+    setIsRegistered(true);
+    // Refetch teams to get updated data
+    const fetchUserTeams = async () => {
+      if (!user?.id || !eventId) return;
+      
+      try {
+        const response = await apiRequest<{ data: any[] }>('/teams/my-teams');
+        const eventTeam = response.data?.find(team => team.EventId.toString() === eventId);
+        
+        if (eventTeam) {
+          setUserTeam(eventTeam);
+          setIsRegistered(true);
+        }
+      } catch (error) {
+        console.error('Error fetching user teams:', error);
+      }
+    };
+    
+    fetchUserTeams();
   };
 
   const formatList = (text: string) => {
@@ -145,12 +201,22 @@ const EventDetailPage = () => {
 
         {/* Right Column - Sidebar */}
         <div className="lg:col-span-1">
-          <EventSidebar 
-            event={event}
-            isRegistered={isRegistered}
-            onRegister={handleRegister}
-            formatDateTime={formatDateTime}
-          />
+          {isEventOrganizer ? (
+            <OrganizerSidebar 
+              event={event}
+              formatDateTime={formatDateTime}
+              onEventUpdated={refetch}
+            />
+          ) : (
+            <EventSidebar 
+              event={event}
+              isRegistered={isRegistered}
+              userTeam={userTeam}
+              teamsLoading={teamsLoading}
+              onRegister={handleRegister}
+              formatDateTime={formatDateTime}
+            />
+          )}
         </div>
       </div>
     </div>

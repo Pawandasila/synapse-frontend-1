@@ -31,8 +31,8 @@ export const roleProtectedRoutes: { [key: string]: RoleType[] } = {
   // Judging - Only judges
   "/dashboard/judge": ["judge"],
   "/dashboard/judging": ["judge"],
-  "/dashboard/submissions": ["judge"],
-  
+  "/dashboard/submissions": ["judge","organizer", "participant"],
+
   // Participant specific
   "/dashboard/participant": ["participant"],
   "/dashboard/teams": ["participant"],

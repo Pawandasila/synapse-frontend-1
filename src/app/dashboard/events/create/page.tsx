@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -12,6 +12,7 @@ import { CalendarDays, Trophy, Users, Target, Sparkles, ArrowLeft, Loader2, Plus
 import { toast } from 'sonner';
 import Link from 'next/link';
 import { eventsAPI } from '@/lib/api';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface TimelineEntry {
   date: string;
@@ -26,7 +27,7 @@ interface PrizeEntry {
   description: string;
 }
 
-type EventMode = 'Online' | 'Offline' | 'Hybrid' | '';
+type EventMode = 'Online' | 'Offline' | '';
 
 interface EventFormData {
   name: string;
@@ -45,25 +46,26 @@ interface EventFormData {
 
 interface EventAPIData {
   [key: string]: unknown;
-  Name: string;
-  Description: string;
-  Theme: string;
-  Mode: EventMode;
-  StartDate: string;
-  EndDate: string;
-  SubmissionDeadline: string | null;
-  ResultDate: string | null;
-  Rules: string;
-  Timeline: string | null;
-  Tracks: string;
-  Prizes: string;
-  MaxTeamSize: number;
-  Sponsors: string | null;
-  IsActive: boolean;
+  name: string;
+  description: string;
+  theme: string;
+  mode: EventMode;
+  startDate: string;
+  endDate: string;
+  submissionDeadline: string | null;
+  resultDate: string | null;
+  rules: string;
+  timeline: string | null;
+  tracks: string;
+  prizes: string;
+  maxTeamSize: number;
+  sponsors: string | null;
+  isActive: boolean;
 }
 
 export default function CreateEventPage() {
   const router = useRouter();
+  const { user, loading: authLoading } = useAuth();
   const [formData, setFormData] = useState<EventFormData>({
     name: '',
     description: '',
@@ -98,53 +100,63 @@ export default function CreateEventPage() {
 
   const [loading, setLoading] = useState<boolean>(false);
 
-  const addTimelineEntry = (): void => {
-    setTimelineEntries([...timelineEntries, {
+  const addTimelineEntry = useCallback((): void => {
+    setTimelineEntries(prev => [...prev, {
       date: '',
       round: '',
       description: '',
       time: ''
     }]);
-  };
+  }, []);
 
-  const removeTimelineEntry = (index: number): void => {
-    if (timelineEntries.length > 1) {
-      setTimelineEntries(timelineEntries.filter((_, i) => i !== index));
-    }
-  };
+  const removeTimelineEntry = useCallback((index: number): void => {
+    setTimelineEntries(prev => {
+      if (prev.length > 1) {
+        return prev.filter((_, i) => i !== index);
+      }
+      return prev;
+    });
+  }, []);
 
-  const updateTimelineEntry = (index: number, field: keyof TimelineEntry, value: string): void => {
-    const updated = [...timelineEntries];
-    updated[index] = { ...updated[index], [field]: value };
-    setTimelineEntries(updated);
-  };
+  const updateTimelineEntry = useCallback((index: number, field: keyof TimelineEntry, value: string): void => {
+    setTimelineEntries(prev => {
+      const updated = [...prev];
+      updated[index] = { ...updated[index], [field]: value };
+      return updated;
+    });
+  }, []);
 
-  const addPrizeEntry = (): void => {
-    setPrizeEntries([...prizeEntries, {
+  const addPrizeEntry = useCallback((): void => {
+    setPrizeEntries(prev => [...prev, {
       position: '',
       amount: '',
       description: ''
     }]);
-  };
+  }, []);
 
-  const removePrizeEntry = (index: number): void => {
-    if (prizeEntries.length > 1) {
-      setPrizeEntries(prizeEntries.filter((_, i) => i !== index));
-    }
-  };
+  const removePrizeEntry = useCallback((index: number): void => {
+    setPrizeEntries(prev => {
+      if (prev.length > 1) {
+        return prev.filter((_, i) => i !== index);
+      }
+      return prev;
+    });
+  }, []);
 
-  const updatePrizeEntry = (index: number, field: keyof PrizeEntry, value: string): void => {
-    const updated = [...prizeEntries];
-    updated[index] = { ...updated[index], [field]: value };
-    setPrizeEntries(updated);
-  };
+  const updatePrizeEntry = useCallback((index: number, field: keyof PrizeEntry, value: string): void => {
+    setPrizeEntries(prev => {
+      const updated = [...prev];
+      updated[index] = { ...updated[index], [field]: value };
+      return updated;
+    });
+  }, []);
 
-  const handleInputChange = (field: keyof EventFormData, value: string | number): void => {
+  const handleInputChange = useCallback((field: keyof EventFormData, value: string | number): void => {
     setFormData(prev => ({
       ...prev,
       [field]: value
     }));
-  };
+  }, []);
 
   const validateForm = (): boolean => {
     if (!formData.name.trim()) {
@@ -200,7 +212,40 @@ export default function CreateEventPage() {
     return true;
   };
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>): Promise<void> => {
+  // Memoized computed values for better performance
+  const validTimelineEntries = useMemo(() => 
+    timelineEntries.filter(entry => 
+      entry.date || entry.round || entry.description || entry.time
+    ), [timelineEntries]
+  );
+
+  const validPrizeEntries = useMemo(() => 
+    prizeEntries.filter(prize => prize.position && prize.amount), 
+    [prizeEntries]
+  );
+
+  const timelineJson = useMemo(() => 
+    validTimelineEntries.length > 0 ? JSON.stringify(validTimelineEntries) : null,
+    [validTimelineEntries]
+  );
+
+  const prizesString = useMemo(() => 
+    validPrizeEntries.map(prize => {
+      const description = prize.description ? ` + ${prize.description}` : '';
+      return `${prize.position}: $${prize.amount}${description}`;
+    }).join(', '),
+    [validPrizeEntries]
+  );
+
+  // Helper function to convert datetime-local to ISO string
+  const formatDateTimeToISO = useCallback((dateTimeLocal: string): string => {
+    if (!dateTimeLocal) return '';
+    // datetime-local format: YYYY-MM-DDTHH:mm
+    // Convert to ISO string format expected by backend
+    return new Date(dateTimeLocal).toISOString();
+  }, []);
+
+  const handleSubmit = useCallback(async (e: React.FormEvent<HTMLFormElement>): Promise<void> => {
     e.preventDefault();
     
     if (!validateForm()) {
@@ -209,44 +254,39 @@ export default function CreateEventPage() {
 
     setLoading(true);
     
-    try {
-      // Validate timeline entries if any are provided
-      const validTimelineEntries = timelineEntries.filter(entry => 
-        entry.date || entry.round || entry.description || entry.time
-      );
-      
-      // Convert timeline entries to JSON string for backend
-      const timelineJson = validTimelineEntries.length > 0 
-        ? JSON.stringify(validTimelineEntries)
-        : null;
-        
-      // Convert prize entries to formatted string for backend
-      const validPrizeEntries = prizeEntries.filter(prize => 
-        prize.position && prize.amount
-      );
-      
-      const prizesString = validPrizeEntries.map(prize => {
-        const description = prize.description ? ` + ${prize.description}` : '';
-        return `${prize.position}: $${prize.amount}${description}`;
-      }).join(', ');
+    // Validate user authentication and role
+    if (!user?.id) {
+      toast.error('User not authenticated. Please log in.');
+      setLoading(false);
+      return;
+    }
 
+    if (user.role !== 'organizer') {
+      toast.error('Only organizers can create events.');
+      setLoading(false);
+      return;
+    }
+    
+    try {
       const eventData: EventAPIData = {
-        Name: formData.name.trim(),
-        Description: formData.description.trim(),
-        Theme: formData.theme.trim(),
-        Mode: formData.mode,
-        StartDate: formData.startDate,
-        EndDate: formData.endDate,
-        SubmissionDeadline: formData.submissionDeadline || null,
-        ResultDate: formData.resultDate || null,
-        Rules: formData.rules.trim(),
-        Timeline: timelineJson,
-        Tracks: formData.tracks.trim(),
-        Prizes: prizesString,
-        MaxTeamSize: formData.maxTeamSize,
-        Sponsors: formData.sponsors.trim() || null,
-        IsActive: true
+        name: formData.name.trim(),
+        description: formData.description.trim(),
+        theme: formData.theme.trim(),
+        mode: formData.mode,
+        startDate: formatDateTimeToISO(formData.startDate),
+        endDate: formatDateTimeToISO(formData.endDate),
+        submissionDeadline: formData.submissionDeadline ? formatDateTimeToISO(formData.submissionDeadline) : null,
+        resultDate: formData.resultDate ? formatDateTimeToISO(formData.resultDate) : null,
+        rules: formData.rules.trim(),
+        timeline: timelineJson,
+        tracks: formData.tracks.trim(),
+        prizes: prizesString,
+        maxTeamSize: formData.maxTeamSize,
+        sponsors: formData.sponsors.trim() || null,
+        isActive: true
       };
+
+      console.log(eventData)
 
       // Create the event using the API
       await eventsAPI.create(eventData);
@@ -263,21 +303,57 @@ export default function CreateEventPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [formData, timelineJson, prizesString, validateForm, router, formatDateTimeToISO, user]);
 
-  const handleNumberInputChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
+  const handleNumberInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>): void => {
     const value = parseInt(e.target.value) || 4;
     const clampedValue = Math.max(1, Math.min(10, value));
     handleInputChange('maxTeamSize', clampedValue);
-  };
+  }, [handleInputChange]);
 
-  const handleGoBack = (): void => {
+  const handleGoBack = useCallback((): void => {
     if (window.history.length > 1) {
       window.history.back();
     } else {
       router.push('/dashboard/events');
     }
-  };
+  }, [router]);
+
+  // Show loading spinner while authentication is being checked
+  if (authLoading) {
+    return (
+      <div className="auth-layout">
+        <div className="auth-container">
+          <div className="flex items-center justify-center min-h-[50vh]">
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            <span className="ml-2 text-muted-foreground">Loading...</span>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Redirect non-organizers
+  if (user && user.role !== 'organizer') {
+    return (
+      <div className="auth-layout">
+        <div className="auth-container">
+          <div className="max-w-2xl mx-auto text-center py-12">
+            <div className="mb-6">
+              <Target className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
+              <h2 className="text-2xl font-bold text-foreground mb-2">Access Restricted</h2>
+              <p className="text-muted-foreground">
+                Only organizers can create events. Please contact an administrator if you need organizer access.
+              </p>
+            </div>
+            <Button onClick={() => router.push('/dashboard')} variant="outline">
+              Go to Dashboard
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="auth-layout">
@@ -398,7 +474,6 @@ export default function CreateEventPage() {
                         <SelectContent>
                           <SelectItem value="Online">🌐 Online</SelectItem>
                           <SelectItem value="Offline">🏢 Offline</SelectItem>
-                          <SelectItem value="Hybrid">🔀 Hybrid</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
