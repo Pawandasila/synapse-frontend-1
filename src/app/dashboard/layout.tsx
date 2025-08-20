@@ -75,8 +75,8 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
         <div className="p-4 border-b border-border">
           <div className="flex items-center gap-3">
             <Avatar className="h-10 w-10">
-              <AvatarImage src="/placeholder-avatar.jpg" />
-              <AvatarFallback className="bg-primary/10 text-primary font-semibold">
+              <AvatarImage src={user?.avatar} alt="User avatar" />
+              <AvatarFallback className="bg-primary text-primary-foreground text-sm">
                 {user.name?.charAt(0).toUpperCase() || "U"}
               </AvatarFallback>
             </Avatar>

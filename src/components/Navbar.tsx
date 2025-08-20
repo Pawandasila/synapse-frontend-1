@@ -43,8 +43,7 @@ import { useRouter } from "next/navigation";
 const Navbar = () => {
   const { user, isAuthenticated, logout } = useAuth();
   const [isSearchOpen, setIsSearchOpen] = useState(false);
-  const router = useRouter();
-
+  
   const navItems = [
     { href: "/competitions", label: "Competitions", icon: Trophy },
   ];
