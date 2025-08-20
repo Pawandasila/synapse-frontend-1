@@ -63,22 +63,22 @@ export const organizerSidebarConfig: SidebarMenuGroup[] = [
       {
         icon: BarChart3,
         label: "Event Analytics",
-        href: "/dashboard/analytics",
+        href: "#",
       },
       {
         icon: TrendingUp,
         label: "Participant Stats",
-        href: "/dashboard/stats",
+        href: "#",
       },
-      { icon: Presentation, label: "Reports", href: "/dashboard/reports" },
+      { icon: Presentation, label: "Reports", href: "#" },
     ],
   },
   {
     title: "Account",
     items: [
-      { icon: User, label: "Profile", href: "/dashboard/profile" },
-      { icon: Bell, label: "Announcements", href: "/dashboard/announcements" },
-      { icon: Settings, label: "Settings", href: "/dashboard/settings" },
+      { icon: User, label: "Profile", href: "#" },
+      { icon: Bell, label: "Announcements", href: "#" },
+      { icon: Settings, label: "Settings", href: "#" },
     ],
   },
 ];
@@ -88,14 +88,14 @@ export const participantSidebarConfig: SidebarMenuGroup[] = [
     title: "Main",
     items: [
       { icon: Home, label: "Overview", href: "/dashboard" },
-      { icon: Trophy, label: "Competitions", href: "/competitions" },
+      // { icon: Trophy, label: "Competitions", href: "/competitions" },
       { icon: Calendar, label: "My Events", href: "/dashboard/events" },
-      {
-        icon: Target,
-        label: "Challenges",
-        href: "/dashboard/challenges",
-        badge: "New",
-      },
+      // {
+      //   icon: Target,
+      //   label: "Challenges",
+      //   href: "/dashboard/challenges",
+      //   badge: "New",
+      // },
     ],
   },
   {
@@ -108,15 +108,15 @@ export const participantSidebarConfig: SidebarMenuGroup[] = [
         href: "/dashboard/messages",
         badge: "12",
       },
-      { icon: BookOpen, label: "Learning", href: "/dashboard/learning" },
-      { icon: Award, label: "Achievements", href: "/dashboard/achievements" },
+      { icon: BookOpen, label: "Learning", href: "#" },
+      { icon: Award, label: "Achievements", href: "#" },
     ],
   },
   {
     title: "Progress",
     items: [
-      { icon: BarChart3, label: "Performance", href: "/dashboard/analytics" },
-      { icon: TrendingUp, label: "Progress", href: "/dashboard/progress" },
+      { icon: BarChart3, label: "Performance", href: "#" },
+      { icon: TrendingUp, label: "Progress", href: "#" },
       {
         icon: FileText,
         label: "My Submissions",
@@ -127,13 +127,13 @@ export const participantSidebarConfig: SidebarMenuGroup[] = [
   {
     title: "Account",
     items: [
-      { icon: User, label: "Profile", href: "/dashboard/profile" },
+      { icon: User, label: "Profile", href: "#" },
       {
         icon: Bell,
         label: "Announcements",
-        href: "/dashboard/announcements",
+        href: "#",
       },
-      { icon: Settings, label: "Settings", href: "/dashboard/settings" },
+      { icon: Settings, label: "Settings", href: "#" },
     ],
   },
 ];

@@ -14,4 +14,6 @@ export { TeamDetailsCard } from './TeamDetailsCard';
 export { TeamManagementDialog } from './TeamManagementDialog';
 export { LoadingState } from './LoadingState';
 export { NotFoundState } from './NotFoundState';
+export { default as OrganizerEventChat } from './OrganizerEventChat';
+export { default as EventQnA } from './EventQnA';
 export type { Event } from './types';

@@ -18,6 +18,7 @@ import {
   OrganizerSidebar,
   LoadingState,
   NotFoundState,
+  EventQnA,
   type Event
 } from './_components';
 
@@ -197,6 +198,12 @@ const EventDetailPage = () => {
               />
             </TabsContent>
           </Tabs>
+
+          {/* Event Q&A Section */}
+          <EventQnA 
+            eventId={eventId}
+            isOrganizer={isEventOrganizer}
+          />
         </div>
 
         {/* Right Column - Sidebar */}

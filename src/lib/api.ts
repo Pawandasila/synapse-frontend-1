@@ -181,4 +181,54 @@ export const eventsAPI = {
     }),
 };
 
-export default { apiRequest, authAPI, eventsAPI };
+// Chat QnA API functions
+export const chatQnaAPI = {
+  // Get all chat messages for an event
+  getByEvent: (eventId: string, page: number = 1, limit: number = 20) =>
+    apiRequest(`/chat/event/${eventId}?page=${page}&limit=${limit}`),
+
+  // Create a new chat message/question
+  create: (eventId: string, message: string) =>
+    apiRequest("/chat/", {
+      method: "POST",
+      body: JSON.stringify({ eventId: parseInt(eventId), message }),
+    }),
+
+  // Get chat message by ID
+  getById: (id: string) => apiRequest(`/chat/${id}`),
+
+  // Update chat message
+  update: (id: string, message: string) =>
+    apiRequest(`/chat/${id}`, {
+      method: "PATCH",
+      body: JSON.stringify({ message }),
+    }),
+
+  // Delete chat message
+  delete: (id: string) =>
+    apiRequest(`/chat/${id}`, {
+      method: "DELETE",
+    }),
+
+  // Add reply to chat message
+  addReply: (chatId: string, message: string) =>
+    apiRequest(`/chat/${chatId}/reply`, {
+      method: "POST",
+      body: JSON.stringify({ message }),
+    }),
+
+  // Update chat reply
+  updateReply: (chatId: string, replyId: string, message: string) =>
+    apiRequest(`/chat/${chatId}/reply/${replyId}`, {
+      method: "PATCH",
+      body: JSON.stringify({ message }),
+    }),
+
+  // Delete chat reply
+  deleteReply: (chatId: string, replyId: string) =>
+    apiRequest(`/chat/${chatId}/reply/${replyId}`, {
+      method: "DELETE",
+    }),
+};
+
+export default { apiRequest, authAPI, eventsAPI, chatQnaAPI };

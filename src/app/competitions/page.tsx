@@ -1,8 +1,7 @@
 'use client';
 
-
-
 import React, { useState, useMemo } from 'react';
+import { useRouter } from 'next/navigation';
 import { Search, Filter, Calendar, Trophy, Users, MapPin, Clock, Star, ChevronRight, Eye, Heart } from 'lucide-react';
 
 type Competition = {
@@ -25,9 +24,9 @@ type Competition = {
 };
 
 const CompetitionsPage = () => {
+  const router = useRouter();
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [selectedFilter, setSelectedFilter] = useState<'all' | 'open' | 'upcoming' | 'planning'>('all');
-  const [selectedCompetition, setSelectedCompetition] = useState<Competition | null>(null);
 
   const competitions: Competition[] = [
     {
@@ -204,7 +203,7 @@ const CompetitionsPage = () => {
                 <div
                   key={competition.id}
                   className="bg-white/10 backdrop-blur-lg rounded-2xl overflow-hidden border border-white/20 hover:border-purple-500/50 transition-all duration-300 hover:shadow-2xl hover:shadow-purple-500/20 group cursor-pointer"
-                  onClick={() => setSelectedCompetition(competition)}
+                  onClick={() => router.push(`/competitions/${competition.id}`)}
                 >
                   <div className="md:flex">
                     {/* Competition Image */}
@@ -290,58 +289,6 @@ const CompetitionsPage = () => {
             </div>
           </div>
         </div>
-
-        {/* Competition Detail Modal */}
-        {selectedCompetition && (
-          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-            <div className="bg-white/10 backdrop-blur-lg rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto border border-white/20">
-              <div className="p-6">
-                <div className="flex justify-between items-start mb-6">
-                  <div>
-                    <h2 className="text-3xl font-bold text-white mb-2">{selectedCompetition.title}</h2>
-                    <p className="text-gray-300">{selectedCompetition.description}</p>
-                  </div>
-                  <button
-                    onClick={() => setSelectedCompetition(null)}
-                    className="text-gray-400 hover:text-white text-2xl"
-                    aria-label="Close modal"
-                  >
-                    ×
-                  </button>
-                </div>
-
-                <div className="grid md:grid-cols-2 gap-6">
-                  <div>
-                    <h3 className="text-xl font-semibold text-white mb-3">Competition Details</h3>
-                    <div className="space-y-3 text-gray-300">
-                      <div><strong className="text-white">Theme:</strong> {selectedCompetition.theme}</div>
-                      <div><strong className="text-white">Tracks:</strong> {selectedCompetition.tracks.join(', ')}</div>
-                      <div><strong className="text-white">Rules:</strong> {selectedCompetition.rules}</div>
-                      <div><strong className="text-white">Timeline:</strong> {selectedCompetition.timeline}</div>
-                    </div>
-                  </div>
-                  
-                  <div>
-                    <h3 className="text-xl font-semibold text-white mb-3">Prizes & Sponsors</h3>
-                    <div className="space-y-3 text-gray-300">
-                      <div><strong className="text-white">Prizes:</strong> {selectedCompetition.prizes}</div>
-                      <div><strong className="text-white">Sponsors:</strong> {selectedCompetition.sponsors.join(', ')}</div>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="mt-8 flex gap-4">
-                  <button className="flex-1 px-6 py-3 bg-gradient-to-r from-purple-500 to-blue-500 text-white rounded-lg font-medium hover:shadow-lg transition-all duration-300">
-                    {selectedCompetition.status === 'open' ? 'Register Now' : 'Get Notified'}
-                  </button>
-                  <button className="px-6 py-3 bg-white/10 text-white rounded-lg font-medium hover:bg-white/20 transition-all border border-white/20">
-                    Share
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
       </div>
 
       <style jsx>{`
