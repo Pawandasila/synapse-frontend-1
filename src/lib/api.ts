@@ -150,6 +150,9 @@ export const eventsAPI = {
   // Get event by ID
   getById: (id: string) => apiRequest(`/events/${id}`),
 
+  // Get event details for participant (includes enrollment status and team details)
+  getForParticipant: (id: string) => apiRequest(`/events/${id}/participant`),
+
   create: (eventData: Record<string, unknown>) =>
     apiRequest("/events/create", {
       method: "POST",
