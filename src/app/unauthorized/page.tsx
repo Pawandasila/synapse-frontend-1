@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -69,7 +69,7 @@ const getRouteDisplayName = (route: string): string => {
   return routeNames[route] || route;
 };
 
-export default function UnauthorizedPage() {
+function UnauthorizedContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [userRole, setUserRole] = useState<RoleType | null>(null);
@@ -222,5 +222,17 @@ export default function UnauthorizedPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function UnauthorizedPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
+      </div>
+    }>
+      <UnauthorizedContent />
+    </Suspense>
   );
 }
