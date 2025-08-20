@@ -171,7 +171,7 @@ const EventCard = ({ event, size = 'default', showOrganizer = true }: EventCardP
 
         {/* Action Button */}
         <Button asChild className="w-full group">
-          <Link href={`/events/${event.id}`}>
+          <Link href="/competitions">
             <span>View Details</span>
             <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
           </Link>
