@@ -51,17 +51,22 @@ const EventEnrollmentsPage = () => {
 
     // Search filter
     if (searchQuery) {
-      filtered = filtered.filter(enrollment =>
-        enrollment.UserName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        enrollment.UserEmail.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        enrollment.EventName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        (enrollment.TeamName && enrollment.TeamName.toLowerCase().includes(searchQuery.toLowerCase()))
-      );
+      filtered = filtered.filter(enrollment => {
+        const userName = enrollment.name || enrollment.UserName || '';
+        const userEmail = enrollment.email || enrollment.UserEmail || '';
+        const eventName = enrollment.EventName || '';
+        const teamName = enrollment.TeamName || '';
+        
+        return userName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+               userEmail.toLowerCase().includes(searchQuery.toLowerCase()) ||
+               eventName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+               teamName.toLowerCase().includes(searchQuery.toLowerCase());
+      });
     }
 
     // Event filter
     if (selectedEvent !== 'all') {
-      filtered = filtered.filter(enrollment => enrollment.EventID.toString() === selectedEvent);
+      filtered = filtered.filter(enrollment => enrollment.EventID?.toString() === selectedEvent);
     }
 
     // Status filter
@@ -78,19 +83,19 @@ const EventEnrollmentsPage = () => {
         case 'today':
           filterDate.setHours(0, 0, 0, 0);
           filtered = filtered.filter(enrollment => 
-            new Date(enrollment.EnrollmentDate) >= filterDate
+            enrollment.EnrollmentDate && new Date(enrollment.EnrollmentDate) >= filterDate
           );
           break;
         case 'week':
           filterDate.setDate(now.getDate() - 7);
           filtered = filtered.filter(enrollment => 
-            new Date(enrollment.EnrollmentDate) >= filterDate
+            enrollment.EnrollmentDate && new Date(enrollment.EnrollmentDate) >= filterDate
           );
           break;
         case 'month':
           filterDate.setMonth(now.getMonth() - 1);
           filtered = filtered.filter(enrollment => 
-            new Date(enrollment.EnrollmentDate) >= filterDate
+            enrollment.EnrollmentDate && new Date(enrollment.EnrollmentDate) >= filterDate
           );
           break;
       }
@@ -100,8 +105,10 @@ const EventEnrollmentsPage = () => {
   }, [enrollments, searchQuery, selectedEvent, selectedStatus, selectedDateRange]);
 
   const handleContactParticipant = (enrollment: Enrollment) => {
+    const userEmail = enrollment.email || enrollment.UserEmail || '';
+    const eventName = enrollment.EventName || 'Event';
     // Open email client
-    window.open(`mailto:${enrollment.UserEmail}?subject=Regarding ${enrollment.EventName} Enrollment`);
+    window.open(`mailto:${userEmail}?subject=Regarding ${eventName} Enrollment`);
   };
 
   const handleViewProfile = (userId: number) => {
@@ -112,7 +119,8 @@ const EventEnrollmentsPage = () => {
   const handleBulkEmail = () => {
     const emails = filteredEnrollments
       .filter(e => e.Status === 'Enrolled')
-      .map(e => e.UserEmail)
+      .map(e => e.email || e.UserEmail || '')
+      .filter(email => email) // Remove empty emails
       .join(',');
     
     window.open(`mailto:?bcc=${emails}&subject=Important Update About Your Event Enrollment`);

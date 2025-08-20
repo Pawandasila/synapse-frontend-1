@@ -97,17 +97,19 @@ export const EnrollmentTable = ({
                     <div className="flex flex-col">
                       <div className="flex items-center gap-2">
                         <User className="h-4 w-4 text-muted-foreground" />
-                        <span className="font-medium">{enrollment.UserName}</span>
+                        <span className="font-medium">{enrollment.name || enrollment.UserName}</span>
                       </div>
-                      <span className="text-sm text-muted-foreground">{enrollment.UserEmail}</span>
+                      <span className="text-sm text-muted-foreground">{enrollment.email || enrollment.UserEmail}</span>
                     </div>
                   </TableCell>
                   <TableCell>
                     <div className="flex flex-col">
-                      <span className="font-medium">{enrollment.EventName}</span>
-                      <span className="text-sm text-muted-foreground">
-                        {format(new Date(enrollment.EventStartDate), 'MMM dd, yyyy')}
-                      </span>
+                      <span className="font-medium">{enrollment.EventName || 'Event'}</span>
+                      {enrollment.EventStartDate && (
+                        <span className="text-sm text-muted-foreground">
+                          {format(new Date(enrollment.EventStartDate), 'MMM dd, yyyy')}
+                        </span>
+                      )}
                     </div>
                   </TableCell>
                   <TableCell>
@@ -129,7 +131,11 @@ export const EnrollmentTable = ({
                     <div className="flex items-center gap-2">
                       <Clock className="h-3 w-3 text-muted-foreground" />
                       <span className="text-sm">
-                        {format(new Date(enrollment.EnrollmentDate), 'MMM dd, yyyy HH:mm')}
+                        {enrollment.EnrollmentDate ? (
+                          format(new Date(enrollment.EnrollmentDate), 'MMM dd, yyyy HH:mm')
+                        ) : (
+                          'N/A'
+                        )}
                       </span>
                     </div>
                   </TableCell>
@@ -145,7 +151,7 @@ export const EnrollmentTable = ({
                           <MessageSquare className="h-4 w-4 mr-2" />
                           Contact Participant
                         </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => onViewProfile(enrollment.UserID)}>
+                        <DropdownMenuItem onClick={() => onViewProfile(enrollment.userid || enrollment.UserID)}>
                           <Eye className="h-4 w-4 mr-2" />
                           View Profile
                         </DropdownMenuItem>
