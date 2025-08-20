@@ -2,7 +2,7 @@
 
 A modern, responsive frontend application for the Synapse hackathon management platform built with Next.js 15 and React 19.
 
-## 🚀 Features
+## 🚀 Advanced Features
 
 ### 🎯 Core Functionality
 - **Multi-Role Authentication**: Support for organizers, judges, and participants
