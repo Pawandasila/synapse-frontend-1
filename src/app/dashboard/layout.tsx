@@ -125,7 +125,7 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
   };
 
   return (
-    <div className="flex h-screen bg-background w-full">
+    <div className="flex h-[92vh] bg-background w-full">
       <div
         className={`${
           sidebarCollapsed ? "w-16" : "w-64"

@@ -22,8 +22,29 @@ export interface Event {
   CreatedAt: string;
 }
 
+export interface PaginationInfo {
+  currentPage: number;
+  totalPages: number;
+  totalEvents: number;
+  eventsPerPage: number;
+  hasNextPage: boolean;
+  hasPrevPage: boolean;
+  nextPage: number | null;
+  prevPage: number | null;
+}
+
+export interface EventsApiResponse {
+  success: boolean;
+  message: string;
+  data: Event[];
+  pagination: PaginationInfo;
+}
+
 interface ApiResponse {
   data?: Event[] | Event;
+  success?: boolean;
+  message?: string;
+  pagination?: PaginationInfo;
   [key: string]: unknown;
 }
 
@@ -37,20 +58,30 @@ export interface EventSearchParams {
   theme?: string;
 }
 
-export const useEvents = () => {
+export const useEvents = (page: number = 1) => {
   const [events, setEvents] = useState<Event[]>([]);
+  const [pagination, setPagination] = useState<PaginationInfo | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchEvents = async () => {
+  const fetchEvents = async (pageNumber: number = page) => {
     try {
       setLoading(true);
       setError(null);
-      const response = await eventsAPI.getAll() as ApiResponse;
-      const eventsData = Array.isArray(response) ? response : (response.data as Event[] || []);
-
-      const transformedEvents = eventsData.map(transformEvent);
-      setEvents(transformedEvents);
+      const response = await eventsAPI.getAll(pageNumber) as ApiResponse;
+      
+      if (response.success && response.data) {
+        const eventsData = Array.isArray(response.data) ? response.data : [response.data];
+        const transformedEvents = eventsData.map(transformEvent);
+        setEvents(transformedEvents);
+        setPagination(response.pagination || null);
+      } else {
+        // Fallback for non-paginated response
+        const eventsData = Array.isArray(response) ? response : (response.data as Event[] || []);
+        const transformedEvents = eventsData.map(transformEvent);
+        setEvents(transformedEvents);
+        setPagination(null);
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to fetch events");
     } finally {
@@ -59,10 +90,17 @@ export const useEvents = () => {
   };
 
   useEffect(() => {
-    fetchEvents();
-  }, []);
+    fetchEvents(page);
+  }, [page]);
 
-  return { events, loading, error, refetch: fetchEvents };
+  return { 
+    events, 
+    pagination, 
+    loading, 
+    error, 
+    refetch: fetchEvents,
+    fetchPage: fetchEvents
+  };
 };
 
 export const useUpcomingEvents = () => {
@@ -96,21 +134,33 @@ export const useUpcomingEvents = () => {
 
 export const useEventSearch = () => {
   const [events, setEvents] = useState<Event[]>([]);
+  const [pagination, setPagination] = useState<PaginationInfo | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const searchEvents = async (params: EventSearchParams) => {
+  const searchEvents = async (params: EventSearchParams, page: number = 1) => {
     try {
       setLoading(true);
       setError(null);
       const response = await eventsAPI.search(
         params.query,
         params.mode,
-        params.theme
+        params.theme,
+        page
       ) as ApiResponse;
-      const eventsData = Array.isArray(response) ? response : (response.data as Event[] || []);
-      const transformedEvents = eventsData.map(transformEvent);
-      setEvents(transformedEvents);
+      
+      if (response.success && response.data) {
+        const eventsData = Array.isArray(response.data) ? response.data : [response.data];
+        const transformedEvents = eventsData.map(transformEvent);
+        setEvents(transformedEvents);
+        setPagination(response.pagination || null);
+      } else {
+        // Fallback for non-paginated response
+        const eventsData = Array.isArray(response) ? response : (response.data as Event[] || []);
+        const transformedEvents = eventsData.map(transformEvent);
+        setEvents(transformedEvents);
+        setPagination(null);
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to search events");
     } finally {
@@ -118,7 +168,54 @@ export const useEventSearch = () => {
     }
   };
 
-  return { events, loading, error, searchEvents };
+  return { events, pagination, loading, error, searchEvents };
+};
+
+export const useOrganizerEvents = (organizerId: string, page: number = 1) => {
+  const [events, setEvents] = useState<Event[]>([]);
+  const [pagination, setPagination] = useState<PaginationInfo | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchOrganizerEvents = async (pageNumber: number = page) => {
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await eventsAPI.getByOrganizer(organizerId, pageNumber) as ApiResponse;
+      
+      if (response.success && response.data) {
+        const eventsData = Array.isArray(response.data) ? response.data : [response.data];
+        const transformedEvents = eventsData.map(transformEvent);
+        setEvents(transformedEvents);
+        setPagination(response.pagination || null);
+      } else {
+        // Fallback for non-paginated response
+        const eventsData = Array.isArray(response) ? response : (response.data as Event[] || []);
+        const transformedEvents = eventsData.map(transformEvent);
+        setEvents(transformedEvents);
+        setPagination(null);
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to fetch organizer events");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (organizerId) {
+      fetchOrganizerEvents(page);
+    }
+  }, [organizerId, page]);
+
+  return { 
+    events, 
+    pagination, 
+    loading, 
+    error, 
+    refetch: fetchOrganizerEvents,
+    fetchPage: fetchOrganizerEvents
+  };
 };
 
 export const useEvent = (id: string | null) => {
